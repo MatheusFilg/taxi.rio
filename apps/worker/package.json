@@ -1,0 +1,23 @@
+{
+  "name": "@taxi/worker",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "build": "bun build src/index.ts --outdir dist --target bun",
+    "start": "bun dist/index.js",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@taxi/shared": "workspace:*",
+    "amqplib": "^0.10.5",
+    "ioredis": "^5.4.2"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.6",
+    "@types/bun": "latest",
+    "typescript": "^5.7.0"
+  }
+}
