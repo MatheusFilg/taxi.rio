@@ -6,10 +6,14 @@ Atualizar conforme o desafio avança.
 
 ## O que ainda não foi feito
 
-- Nenhuma Parte 1 implementada (sem `docker-compose.yml`, `api/`, `worker/`, `ui/`).
-- Sparring técnico fechado (D8–D12); falta implementação Parte 1 e K8s/kind (Parte 3).
-- Partes 2 e 3 não iniciadas.
+- JWT, POST/PATCH corridas, idempotência, cache e Mongo no worker (lógica de negócio).
+- Pipeline GitHub Actions.
+- Partes 2 e 3 (métricas `/metrics`, OTel, alertas, k6, k8s).
 - Vídeo de apresentação não gravado.
+
+## O que foi feito (Parte1-Compose)
+
+- Monorepo Bun+Turbo; `docker compose up` com MySQL, Redis, Mongo, RabbitMQ, Prometheus, api, worker, ui (skeleton + health).
 
 ## O que faríamos com mais tempo
 
