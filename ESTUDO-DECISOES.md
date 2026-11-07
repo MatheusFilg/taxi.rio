@@ -69,7 +69,7 @@ pref-rj-teste/
 
 ## D8 — JWT: exemplo completo (sparring → implementação)
 
-**Status:** proposta documentada para você validar antes de `DECISIONS.md` oficial e código.
+**Status:** **confirmado** pelo humano (2026-11-07), incluindo item 8 — motorista **GET** liberado em qualquer corrida.
 
 ### Decisões deste exemplo (pacote fechado)
 
@@ -175,13 +175,10 @@ Assume corrida `id=42` com `passageiro_id = passageiro-ana`.
 | `GET /corridas` | passageiro válido | lista só `sub` próprio | **200** |
 | `GET /corridas/:id` | passageiro Ana | id 42 (dela) | **200** |
 | `GET /corridas/:id` | passageiro Ana | id 99 (de `passageiro-bia`) | **403** |
-| `GET /corridas/:id` | motorista válido | leitura permitida* | **200** ou **403**† |
+| `GET /corridas/:id` | motorista válido | qualquer id (item 8 confirmado) | **200** |
 | `PATCH /corridas/:id/status` | passageiro válido | — | **403** |
 | `PATCH /corridas/:id/status` | motorista válido | transição válida | **200** |
 | `PATCH /corridas/:id/status` | ausente / inválido | — | **401** |
-
-\* *No MVP podemos deixar motorista **GET** qualquer corrida para acompanhar status na UI — decidir se restringe.*  
-† *Se restringir motorista a corridas “atribuídas”, vira regra extra; PDF mínimo só exige 403 perfil errado no PATCH.*
 
 ### Exemplos HTTP (fluxo feliz)
 
@@ -301,7 +298,7 @@ curl -s -w "\n%{http_code}\n" \
 
 Registrar em `DECISIONS.md` assim que você escolher:
 
-- ~~JWT~~ → ver **D8** acima; falta seu **“OK”** para gravar `DECISIONS.md` D8
+- ~~JWT~~ → **D8 fechado** (`DECISIONS.md` + este documento)
 - RabbitMQ: exchange, filas, routing, DLQ
 - Idempotência: `Idempotency-Key` + constraint MySQL + dedup no worker
 - Cache: cache-aside no GET (API lê Redis; worker escreve)

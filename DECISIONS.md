@@ -51,14 +51,12 @@ Formato: contexto → alternativas → escolha → trade-off.
 
 ---
 
-## D8 — Autenticação JWT (proposta alinhada ao PDF)
+## D8 — Autenticação JWT (confirmado 2026-11-07)
 
 - **Contexto:** HTTP + JWT; 401/403 por perfil; token de teste; explicar chave pública; detalhes em `ESTUDO-DECISOES.md` (D8).
 - **Alternativas:** HS256 (secret único) vs RS256; PEM vs JWKS; login real vs tokens estáticos + `mint-jwt`.
-- **Escolha:** **RS256**; validação com **`keys/test-public.pem`** no repo; **tokens pré-gerados** no README + script `mint-jwt` opcional; claims **`sub` + `perfil`** (`passageiro` \| `motorista`); **`@fastify/jwt`** na API; UI com seletor de token de teste; **403** se passageiro acessa corrida de outro `sub`.
+- **Escolha:** **RS256**; validação com **`keys/test-public.pem`** no repo; **tokens pré-gerados** no README + script `mint-jwt` opcional; claims **`sub` + `perfil`** (`passageiro` \| `motorista`); **`@fastify/jwt`** na API; UI com seletor de token de teste; **403** se passageiro acessa corrida de outro `sub`; **motorista** com token válido pode **GET** qualquer corrida (**200**) para acompanhar status na UI.
 - **Trade-off:** Sem fluxo de senha/OAuth (fora do escopo); JWKS não implementado na v1 — PEM atende o enunciato; privada só em dev (`.gitignore`).
-
-*Entrada registrada após sparring; ajuste se você discordar de algum item.*
 
 ---
 

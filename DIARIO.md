@@ -15,4 +15,5 @@ Formato: uma linha (ou bloco curto) por ocorrência, cronológico.
 - **Modelos reaplicados** via script: Compass/Sentinel `plan`+composer; Nexus/Relay `grok-4.7-medium`; Iris/Forge `composer-2.5`.
 - **Repo:** `.maestri/`, `scripts/maestri/`, `docs/WORKSPACE-AGENTES.md` fora do git (orquestração local).
 - Sparring monorepo: humano escolheu **Bun + Turborepo + `packages/shared` mínimo** (JWT + fila) e **Vite + React** sem shadcn → D6/D7 em `DECISIONS.md` e `ESTUDO-DECISOES.md`.
-- Sparring JWT: exemplo completo (matriz rota×perfil, payloads, curl, UI, RS256+PEM) em `ESTUDO-DECISOES.md` D8; rascunho **D8** em `DECISIONS.md` aguardando OK do humano.
+- Sparring JWT: exemplo completo em `ESTUDO-DECISOES.md` D8; humano **OK D8** + item 8 (motorista GET qualquer corrida) → `DECISIONS.md` D8 confirmado.
+- Próximo sparring: **RabbitMQ** (topologia + DLQ).
