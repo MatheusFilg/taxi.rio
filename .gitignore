@@ -1,0 +1,4 @@
+# Maestri / orquestração local (não faz parte da entrega do desafio)
+.maestri/
+scripts/maestri/
+docs/WORKSPACE-AGENTES.md
