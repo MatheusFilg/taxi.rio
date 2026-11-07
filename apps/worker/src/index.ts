@@ -1,6 +1,6 @@
 import amqp from 'amqplib';
 import Redis from 'ioredis';
-import { RABBIT } from '@taxi/shared';
+import { RABBIT, renderPrometheusMetrics } from '@taxi/shared';
 
 const port = Number(process.env.PORT ?? 3001);
 const host = process.env.HOST ?? '0.0.0.0';
@@ -33,6 +33,13 @@ async function main() {
           status: 'ok',
           service: 'worker',
           queue: RABBIT.workerQueue,
+        });
+      }
+      if (url.pathname === '/metrics') {
+        return new Response(renderPrometheusMetrics('worker'), {
+          headers: {
+            'Content-Type': 'text/plain; version=0.0.4; charset=utf-8',
+          },
         });
       }
       return new Response('Taxi.Rio Worker', { status: 200 });
