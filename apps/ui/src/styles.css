@@ -10,9 +10,36 @@ body {
 }
 
 .page {
-  max-width: 32rem;
+  max-width: 36rem;
   margin: 2rem auto;
   padding: 1rem;
+}
+
+.hint {
+  font-size: 0.85rem;
+  color: #555;
+}
+
+section {
+  margin: 1.25rem 0;
+  padding: 1rem;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+}
+
+label {
+  display: block;
+  margin: 0.5rem 0;
+}
+
+input,
+select,
+textarea {
+  display: block;
+  width: 100%;
+  margin-top: 0.25rem;
+  box-sizing: border-box;
 }
 
 button {
