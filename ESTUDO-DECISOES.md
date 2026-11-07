@@ -307,6 +307,25 @@ curl -s -w "\n%{http_code}\n" \
 
 **Como explicar escalabilidade em 30s:** “Hoje usei direct com duas routing keys fixas porque são só dois eventos — o broker roteia por nome exato e o worker usa uma fila. Se o produto ganhasse várias famílias (corrida, pagamento, notificação), eu migraria para topic ou filas por domínio; não paguei essa complexidade no MVP do desafio.”
 
+## D10 — RabbitMQ pergunta 2: retry + DLQ (confirmado)
+
+**Em linguagem simples:** o worker tenta processar; se Mongo/Redis falhar de forma **temporária**, a mensagem **volta para fila** até **3 vezes**; se continuar quebrado, vai para a **fila morta (DLQ)** para não ficar rodando em loop — você inspeciona no RabbitMQ e corrige o bug.
+
+```text
+taxi.worker  ──(falha, retry ≤3)──▶  ainda taxi.worker
+            ──(falha definitiva)──▶  taxi.dlx ──▶ taxi.worker.dlq
+```
+
+| Peça | Valor |
+|------|--------|
+| Ack | **Manual** (`ack` só após Redis+Mongo OK) |
+| Retries | **3** (header `x-retry-count` ou controle equivalente no consumer) |
+| DLX | `taxi.dlx` (direct) |
+| DLQ | `taxi.worker.dlq` |
+| Duplicata | At-least-once → **idempotência** no handler (próximo sparring) |
+
+**Defesa ~30s:** “Não assumi exactly-once no broker. Com ack manual e retry limitado absorvo falha transitória; depois de três tentativas dead-letter para DLQ para não envenenar a fila principal. Processamento idempotente no worker torna reentrega segura.”
+
 ---
 
 ## Sparring ainda em aberto (não decidir sozinho)
@@ -314,7 +333,7 @@ curl -s -w "\n%{http_code}\n" \
 Registrar em `DECISIONS.md` assim que você escolher:
 
 - ~~JWT~~ → **D8 fechado**
-- ~~Exchange/fila~~ → **D9** (direct + fila única); falta **DLQ / retries**
+- ~~Exchange/fila~~ → **D9** + **D10** fechados
 - Idempotência: `Idempotency-Key` + constraint MySQL + dedup no worker
 - Cache: cache-aside no GET (API lê Redis; worker escreve)
 - Cluster local Parte 3: kind vs k3d vs minikube

@@ -57,7 +57,14 @@ Formato: contexto → alternativas → escolha → trade-off.
 - **Escalabilidade (não implementado):** com mais **famílias** de eventos (ex.: `pagamento.*`, `motorista.*`) ou dezenas de tipos, **topic** + padrão `corrida.#` reduziria redesenho de bindings — YAGNI com só 2 eventos.
 - **Trade-off:** Direct é mais simples e defensável no desafio; perde flexibilidade de wildcard até migrar exchange/fila.
 
-> *DLQ / retries — sparring pergunta 2.*
+---
+
+## D10 — RabbitMQ: retry + DLQ (confirmado 2026-11-07)
+
+- **Contexto:** PDF exige tolerância a duplicata (at-least-once); falhas transitórias não podem perder evento nem travar a fila para sempre.
+- **Alternativas:** só requeue infinito; descartar após erro; **retry limitado + DLQ**.
+- **Escolha:** **ack manual** no worker; até **3 tentativas** por mensagem (contador `x-retry-count` no header ou republicação controlada); após esgotar, **`nack` sem requeue** com fila principal configurada com **`x-dead-letter-exchange`** (`taxi.dlx`) → fila **`taxi.worker.dlq`**; operador reprocessa da DLQ manualmente no dev (sem Alertmanager).
+- **Trade-off:** Duplicatas e reentregas exigem **idempotência no worker** (sparring D11); DLQ cresce se bug persistir — alerta na Parte 2 justifica limiar.
 
 ---
 
