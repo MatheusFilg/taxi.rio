@@ -341,6 +341,31 @@ taxi.worker  ──(falha, retry ≤3)──▶  ainda taxi.worker
 
 **Defesa ~40s:** “Garantia em dupla: na borda HTTP a key evita corrida duplicada por re-submit; no consumidor o `event_id` absorve at-least-once do Rabbit com retries da D10. Não confio só em Redis na API porque o PDF pede fonte da verdade no MySQL.”
 
+## D12 — Cache de status (confirmado: B + invalidação)
+
+**Em linguagem simples:** o **MySQL** manda no dado oficial. O **Redis** é um painel rápido. O **worker** atualiza o painel depois de cada evento. Na **mudança de status** (PATCH), a API **apaga** a chave no Redis para ninguém ler um status antigo; o próximo **GET** vai ao MySQL e fica certo; quando o worker roda, o Redis fica rápido de novo.
+
+```text
+PATCH status
+  API: MySQL UPDATE → DEL corrida:42 → publish evento
+
+GET (antes do worker)
+  Redis MISS → MySQL → 200 status novo ✓
+
+Worker: Mongo + SET corrida:42 → próximo GET HIT no Redis
+```
+
+| Ação | MySQL | Redis | Rabbit |
+|------|-------|-------|--------|
+| POST corrida | INSERT | (worker SET ou GET miss) | corrida.criada |
+| PATCH status | UPDATE | **DEL** `corrida:{id}` | corrida.status_alterado |
+| GET | fallback se miss | **leitura 1º** | — |
+| Worker evento | — | **SET** projeção status | consume + ack |
+
+**Chave sugerida:** `corrida:{id}` — JSON `{ status, corrida_id, updated_at }`.
+
+**Defesa ~45s:** “Cache é projeção assíncrona: o worker materializa o que a fila confirmou, Mongo guarda auditoria. Na leitura uso cache-aside com fallback no MySQL. No PATCH invalido a chave para não exibir SOLICITADA depois que o banco já está ACEITA — o GET miss lê a verdade até o worker reidratar o Redis.”
+
 ---
 
 ## Sparring ainda em aberto (não decidir sozinho)
@@ -350,7 +375,7 @@ Registrar em `DECISIONS.md` assim que você escolher:
 - ~~JWT~~ → **D8 fechado**
 - ~~Exchange/fila~~ → **D9** + **D10** fechados
 - ~~Idempotência~~ → **D11** (API + worker)
-- Cache: cache-aside no GET (API lê Redis; worker escreve)
+- ~~Cache~~ → **D12** (worker SET + GET Redis/MySQL + DEL no PATCH)
 - Cluster local Parte 3: kind vs k3d vs minikube
 
 ---

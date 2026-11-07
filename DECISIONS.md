@@ -77,6 +77,15 @@ Formato: contexto → alternativas → escolha → trade-off.
 
 ---
 
+## D12 — Cache de status: worker materializa Redis + invalidação na API (confirmado 2026-11-07)
+
+- **Contexto:** PDF pede Redis como cache de status; fluxo API → Rabbit → worker; GET quase em tempo real.
+- **Alternativas:** cache-aside só na API (A); worker escreve + API lê com fallback MySQL (B); write-through síncrono na API (C).
+- **Escolha:** **B + invalidação** — **worker** faz `SET` em `corrida:{id}` após processar evento (`corrida.criada` / `corrida.status_alterado`), com histórico no Mongo; **API** no `GET` lê Redis primeiro, **fallback MySQL** em miss; em **POST/PATCH** que alteram status a API atualiza MySQL e publica evento e faz **`DEL corrida:{id}`** no Redis para não servir status velho até o worker repor.
+- **Trade-off:** GET pode ir ao MySQL na janela curta pós-PATCH (correto, um pouco mais lento); defesa alinha com diagrama do desafio (projeção assíncrona no worker).
+
+---
+
 ## D8 — Autenticação JWT (confirmado 2026-11-07)
 
 - **Contexto:** HTTP + JWT; 401/403 por perfil; token de teste; explicar chave pública; detalhes em `ESTUDO-DECISOES.md` (D8).

@@ -19,5 +19,6 @@ Formato: uma linha (ou bloco curto) por ocorrência, cronológico.
 - Sparring RabbitMQ **p1:** humano escolheu **direct** + 1 fila (2 routing keys); topic só se crescer famílias/eventos → **D9**.
 - Sparring RabbitMQ **p2:** humano escolheu **retry (≤3) + DLQ** (`taxi.dlx` / `taxi.worker.dlq`, ack manual) → **D10**.
 - Sparring idempotência **p3:** humano escolheu **C** (MySQL `Idempotency-Key` na API + dedup `event_id` no worker) → **D11**.
-- Próximo sparring: **cache-aside** (GET) ou **Parte1-Compose**.
+- Sparring cache **p4:** humano escolheu **B + invalidação** (worker SET Redis, GET com fallback MySQL, DEL no PATCH) → **D12**.
+- Próximo passo: **Parte1-Compose** (monorepo Bun+Turbo + stack no compose).
 - Remoto Git: **https://github.com/MatheusFilg/taxi.rio** (`origin`), push inicial da branch `master` (6 commits de processo/decisões).
