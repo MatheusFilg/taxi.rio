@@ -48,3 +48,21 @@ Formato: contexto → alternativas → escolha → trade-off.
 - **Trade-off:** Se fosse greenfield *sem* restrição, poderia avaliar NATS para simplicidade — aqui a restrição e o domínio “evento de corrida” favorecem Rabbit com exchange + filas dedicadas ao worker.
 
 > *Topologia concreta (DLQ, exchange) — entrada pendente após sparring.*
+
+---
+
+## D6 — Monorepo: Bun + Turborepo + `packages/shared`
+
+- **Contexto:** Um repositório com `api/`, `worker/`, `ui/`; contrato JWT (claims, perfis) e eventos Rabbit (`corrida.criada`, `corrida.status_alterado`) precisam bater entre API, worker e UI; humano já usa Bun + Turbo no dia a dia.
+- **Alternativas:** Três pastas soltas (A); workspaces npm/pnpm sem Turbo; Turbo sem pacote shared.
+- **Escolha:** **Turborepo** na raiz; apps em `apps/api`, `apps/worker`, `apps/ui`; **runtime Bun** para API/worker (e toolchain do monorepo); **`packages/shared`** enxuto — tipos/schemas de JWT, domínio de corrida/status, payloads de mensagem, constantes (routing keys, nomes de evento).
+- **Trade-off:** Setup inicial maior que monorepo “leve”; README/CI/Docker devem deixar explícito que é **Node-compatible (Bun)** — avaliador ainda vê Fastify + worker Node do PDF. Ganho: menos drift API↔worker↔UI na fila e no token; `turbo run test/lint/build` ordena o CI.
+
+---
+
+## D7 — Frontend: Vite + React (sem shadcn pesado)
+
+- **Contexto:** UI mínima (D3); tempo limitado; PDF não avalia design.
+- **Alternativas:** CRA; Vite + biblioteca de componentes (shadcn/Radix); Vite + CSS simples.
+- **Escolha:** **Vite + React** em `apps/ui`; estilização mínima (CSS/modules ou poucas classes), **sem** shadcn/Radix como base do projeto.
+- **Trade-off:** Menos componentes prontos; telas mais “cruas” e defensáveis como foco em fluxo + JWT, não em UI kit.

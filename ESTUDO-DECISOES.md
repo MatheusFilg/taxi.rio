@@ -29,6 +29,44 @@ Complementa `DECISIONS.md` (curto, avaliador) com narrativa e “como explicar e
 
 ---
 
+## D6/D7 — Monorepo Bun+Turbo e UI (decisão humana 2026-11-07)
+
+**Por que não é “fuga” do desafio:** o PDF pede **um repo** com três superfícies; não proíbe monorepo nem runtime além de “API Node”. Bun executa o mesmo TS/JS que você explicaria em Node; nas imagens Docker documentamos `oven/bun` (ou multi-stage que você defende na entrevista).
+
+**Árvore alvo (rascunho):**
+
+```text
+pref-rj-teste/
+├── package.json          # workspaces
+├── turbo.json
+├── apps/api/             # Fastify
+├── apps/worker/
+├── apps/ui/              # Vite + React
+├── packages/shared/      # JWT + eventos + tipos de domínio
+└── docker-compose.yml
+```
+
+**O que entra em `packages/shared` (mínimo, não virar “framework”):**
+
+| Conteúdo | Quem consome | Por quê |
+|----------|--------------|---------|
+| `JwtPayload` / perfil `passageiro` \| `motorista` | api, ui | 401/403 iguais em todo lugar |
+| Envelope de evento + routing key | api (publish), worker (consume) | Fila sem copiar JSON “na mão” |
+| Status da corrida + transições permitidas | api, worker, ui | PATCH e worker alinhados |
+| `correlation_id` (nome/header) | api, worker | Parte 2 logs/trace |
+
+**O que NÃO colocar no shared (evitar over-engineering):** cliente MySQL, plugins Fastify, lógica de consumer — fica nas apps.
+
+### Como explicar Bun + Turbo em 60s
+
+“Usei Turborepo porque API, worker e UI compartilham contrato de JWT e de mensagens Rabbit — um pacote `shared` evita publicar evento com shape diferente do que o worker consome. Bun é meu runtime habitual: compatível com ecossistema Node, acelera install e scripts locais; no Docker e no CI o pipeline é `turbo run` com o mesmo grafo que na minha máquina. Trade-off: mais arquivos na raiz; ganho organização e menos bug de integração na Parte 1.”
+
+### Como explicar UI Vite sem shadcn em 60s
+
+“Vite para dev rápido e build simples no compose. Sem shadcn porque o PDF não pontua design — quis telas legíveis com CSS direto e tempo em JWT, idempotência e fila.”
+
+---
+
 ## Sparring ainda em aberto (não decidir sozinho)
 
 Registrar em `DECISIONS.md` assim que você escolher:
