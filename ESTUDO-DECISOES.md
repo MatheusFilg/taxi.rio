@@ -322,9 +322,24 @@ taxi.worker  ──(falha, retry ≤3)──▶  ainda taxi.worker
 | Retries | **3** (header `x-retry-count` ou controle equivalente no consumer) |
 | DLX | `taxi.dlx` (direct) |
 | DLQ | `taxi.worker.dlq` |
-| Duplicata | At-least-once → **idempotência** no handler (próximo sparring) |
+| Duplicata | At-least-once → **idempotência** no handler (**D11**) |
 
 **Defesa ~30s:** “Não assumi exactly-once no broker. Com ack manual e retry limitado absorvo falha transitória; depois de três tentativas dead-letter para DLQ para não envenenar a fila principal. Processamento idempotente no worker torna reentrega segura.”
+
+## D11 — Idempotência pergunta 3: API + worker (confirmado, opção **C**)
+
+**Em linguagem simples:**
+
+- **POST repetido (mesmo botão / mesma key):** a API vê a mesma `Idempotency-Key` e devolve **a mesma corrida**, sem criar outra linha no MySQL.
+- **Mensagem repetida na fila (retry/reentrega):** o worker vê o mesmo `event_id` e **não aplica de novo** o efeito (cache/histórico).
+
+| Camada | Mecanismo |
+|--------|-----------|
+| **API** | `UNIQUE(idempotency_key)` (+ opcional `passageiro_id`); transação: insert corrida + salvar key → replay lê e retorna 201 idêntico |
+| **Mensagem** | Envelope com `event_id` (UUID) + `correlation_id` (trace) |
+| **Worker** | `INSERT processed_events(event_id)` ou “já processei?” antes de Redis/Mongo; ack só depois |
+
+**Defesa ~40s:** “Garantia em dupla: na borda HTTP a key evita corrida duplicada por re-submit; no consumidor o `event_id` absorve at-least-once do Rabbit com retries da D10. Não confio só em Redis na API porque o PDF pede fonte da verdade no MySQL.”
 
 ---
 
@@ -334,7 +349,7 @@ Registrar em `DECISIONS.md` assim que você escolher:
 
 - ~~JWT~~ → **D8 fechado**
 - ~~Exchange/fila~~ → **D9** + **D10** fechados
-- Idempotência: `Idempotency-Key` + constraint MySQL + dedup no worker
+- ~~Idempotência~~ → **D11** (API + worker)
 - Cache: cache-aside no GET (API lê Redis; worker escreve)
 - Cluster local Parte 3: kind vs k3d vs minikube
 

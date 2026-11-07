@@ -64,7 +64,16 @@ Formato: contexto → alternativas → escolha → trade-off.
 - **Contexto:** PDF exige tolerância a duplicata (at-least-once); falhas transitórias não podem perder evento nem travar a fila para sempre.
 - **Alternativas:** só requeue infinito; descartar após erro; **retry limitado + DLQ**.
 - **Escolha:** **ack manual** no worker; até **3 tentativas** por mensagem (contador `x-retry-count` no header ou republicação controlada); após esgotar, **`nack` sem requeue** com fila principal configurada com **`x-dead-letter-exchange`** (`taxi.dlx`) → fila **`taxi.worker.dlq`**; operador reprocessa da DLQ manualmente no dev (sem Alertmanager).
-- **Trade-off:** Duplicatas e reentregas exigem **idempotência no worker** (sparring D11); DLQ cresce se bug persistir — alerta na Parte 2 justifica limiar.
+- **Trade-off:** Duplicatas e reentregas exigem **idempotência no worker** (**D11**); DLQ cresce se bug persistir — alerta na Parte 2 justifica limiar.
+
+---
+
+## D11 — Idempotência: API (MySQL) + worker (confirmado 2026-11-07)
+
+- **Contexto:** PDF: mesmo `Idempotency-Key` no `POST /corridas` não duplica corrida; worker tolera mensagem duplicada (at-least-once + **D10**).
+- **Alternativas:** só banco; só aplicação; **ambos**.
+- **Escolha:** **C — duas camadas:** (1) **API:** header obrigatório `Idempotency-Key` (UUID); tabela/registro com **UNIQUE** (`idempotency_key`, opcionalmente escopo `passageiro_id`/`sub`); em replay retorna **mesma resposta** (201 com mesmo body/id); (2) **Worker:** dedup por **`event_id`** (UUID no envelope da mensagem) persistido (MySQL `processed_events` ou upsert idempotente em Redis/Mongo — preferir registro explícito); reentrega do mesmo evento não altera Redis/Mongo de forma duplicada.
+- **Trade-off:** Mais schema e código; defesa clara na entrevista (“onde garante?” — borda HTTP + consumidor).
 
 ---
 

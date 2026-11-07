@@ -7,7 +7,7 @@ Atualizar conforme o desafio avança.
 ## O que ainda não foi feito
 
 - Nenhuma Parte 1 implementada (sem `docker-compose.yml`, `api/`, `worker/`, `ui/`).
-- Sparring técnico aberto: idempotência end-to-end, cache-aside; RabbitMQ (D9/D10) e JWT (D8) fechados.
+- Sparring técnico aberto: **cache-aside**; JWT (D8), Rabbit (D9/D10), idempotência (D11) fechados.
 - Partes 2 e 3 não iniciadas.
 - Vídeo de apresentação não gravado.
 

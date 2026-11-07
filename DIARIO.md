@@ -18,5 +18,6 @@ Formato: uma linha (ou bloco curto) por ocorrência, cronológico.
 - Sparring JWT: exemplo completo em `ESTUDO-DECISOES.md` D8; humano **OK D8** + item 8 (motorista GET qualquer corrida) → `DECISIONS.md` D8 confirmado.
 - Sparring RabbitMQ **p1:** humano escolheu **direct** + 1 fila (2 routing keys); topic só se crescer famílias/eventos → **D9**.
 - Sparring RabbitMQ **p2:** humano escolheu **retry (≤3) + DLQ** (`taxi.dlx` / `taxi.worker.dlq`, ack manual) → **D10**.
-- Próximo sparring: **idempotência** (POST + worker) ou **cache-aside**.
+- Sparring idempotência **p3:** humano escolheu **C** (MySQL `Idempotency-Key` na API + dedup `event_id` no worker) → **D11**.
+- Próximo sparring: **cache-aside** (GET) ou **Parte1-Compose**.
 - Remoto Git: **https://github.com/MatheusFilg/taxi.rio** (`origin`), push inicial da branch `master` (6 commits de processo/decisões).
