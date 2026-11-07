@@ -1,0 +1,87 @@
+{
+  "rabbit_version": "3.13.0",
+  "users": [
+    {
+      "name": "taxi",
+      "password_hash": "",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": ["administrator"],
+      "limits": {}
+    }
+  ],
+  "vhosts": [{ "name": "/" }],
+  "permissions": [
+    {
+      "user": "taxi",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "queues": [
+    {
+      "name": "taxi.worker",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "taxi.dlx",
+        "x-dead-letter-routing-key": "taxi.worker.dlq"
+      }
+    },
+    {
+      "name": "taxi.worker.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "taxi.direct",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "taxi.dlx",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "taxi.direct",
+      "vhost": "/",
+      "destination": "taxi.worker",
+      "destination_type": "queue",
+      "routing_key": "corrida.criada",
+      "arguments": {}
+    },
+    {
+      "source": "taxi.direct",
+      "vhost": "/",
+      "destination": "taxi.worker",
+      "destination_type": "queue",
+      "routing_key": "corrida.status_alterado",
+      "arguments": {}
+    },
+    {
+      "source": "taxi.dlx",
+      "vhost": "/",
+      "destination": "taxi.worker.dlq",
+      "destination_type": "queue",
+      "routing_key": "taxi.worker.dlq",
+      "arguments": {}
+    }
+  ]
+}
