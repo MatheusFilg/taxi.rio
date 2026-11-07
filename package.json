@@ -1,0 +1,21 @@
+{
+  "name": "taxi-rio",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "test": "turbo test",
+    "lint": "turbo lint",
+    "mint-jwt": "bun run scripts/mint-jwt.ts"
+  },
+  "devDependencies": {
+    "jose": "^6.0.0",
+    "turbo": "^2.5.0",
+    "typescript": "^5.7.0"
+  },
+  "packageManager": "bun@1.2.20"
+}

@@ -1,0 +1,8 @@
+.git
+.maestri
+scripts/maestri
+docs/WORKSPACE-AGENTES.md
+node_modules
+**/dist
+keys/test-private.pem
+**/.turbo
