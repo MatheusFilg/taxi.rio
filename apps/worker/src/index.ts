@@ -1,6 +1,14 @@
 import amqp from 'amqplib';
 import Redis from 'ioredis';
+import mysql from 'mysql2/promise';
+import { MongoClient } from 'mongodb';
 import { RABBIT, renderPrometheusMetrics } from '@taxi/shared';
+import {
+  handleMessage,
+  MAX_RETRIES,
+  nextRetryCount,
+  retryCount,
+} from './process.js';
 
 const port = Number(process.env.PORT ?? 3001);
 const host = process.env.HOST ?? '0.0.0.0';
@@ -8,6 +16,8 @@ const host = process.env.HOST ?? '0.0.0.0';
 const rabbitUrl =
   process.env.RABBITMQ_URL ?? 'amqp://taxi:taxi@localhost:5672';
 const redisUrl = process.env.REDIS_URL ?? 'redis://localhost:6379';
+const mongoUri =
+  process.env.MONGODB_URI ?? 'mongodb://localhost:27017/taxi_audit';
 
 async function waitForRabbit(): Promise<amqp.Connection> {
   for (let i = 0; i < 30; i++) {
@@ -22,6 +32,19 @@ async function waitForRabbit(): Promise<amqp.Connection> {
 
 async function main() {
   const redis = new Redis(redisUrl, { maxRetriesPerRequest: 1 });
+  const pool = mysql.createPool({
+    host: process.env.MYSQL_HOST ?? 'localhost',
+    port: Number(process.env.MYSQL_PORT ?? 3306),
+    user: process.env.MYSQL_USER ?? 'taxi',
+    password: process.env.MYSQL_PASSWORD ?? 'taxi',
+    database: process.env.MYSQL_DATABASE ?? 'taxi',
+    waitForConnections: true,
+    connectionLimit: 5,
+  });
+
+  const mongoClient = new MongoClient(mongoUri);
+  await mongoClient.connect();
+  const mongo = mongoClient.db();
 
   const server = Bun.serve({
     port,
@@ -77,11 +100,36 @@ async function main() {
 
   await ch.consume(
     RABBIT.workerQueue,
-    (msg) => {
+    async (msg) => {
       if (!msg) return;
-      console.log(`[worker] recebido`, msg.fields.routingKey);
-      // Parte 1: stub — próximo card processa Redis/Mongo
-      ch.ack(msg);
+      const rk = msg.fields.routingKey;
+      console.log(`[worker] recebido`, rk);
+      try {
+        await handleMessage(msg, { redis, pool, mongo });
+        ch.ack(msg);
+      } catch (err) {
+        console.error('[worker] erro', err);
+        const retries = retryCount(msg);
+        if (retries < MAX_RETRIES) {
+          const count = nextRetryCount(msg);
+          ch.nack(msg, false, false);
+          ch.publish(
+            RABBIT.exchange,
+            rk,
+            msg.content,
+            {
+              persistent: true,
+              headers: {
+                ...(msg.properties.headers ?? {}),
+                'x-retry-count': count,
+              },
+              contentType: 'application/json',
+            },
+          );
+        } else {
+          ch.nack(msg, false, false);
+        }
+      }
     },
     { noAck: false },
   );
@@ -91,6 +139,8 @@ async function main() {
     await ch.close();
     await conn.close();
     redis.disconnect();
+    await mongoClient.close();
+    await pool.end();
     process.exit(0);
   });
 }
