@@ -7,7 +7,7 @@ Monorepo **Bun + Turborepo**: API Fastify, worker (RabbitMQ), UI React (Vite). V
 - [Docker](https://docs.docker.com/) + Docker Compose v2
 - [Bun](https://bun.sh/) (desenvolvimento local opcional)
 
-## Subir tudo (Parte 1 — fundação)
+## Subir tudo (Parte 1)
 
 ```bash
 docker compose up --build
@@ -20,6 +20,30 @@ docker compose up --build
 | Worker    | http://localhost:3001/health |
 | RabbitMQ  | http://localhost:15672 (taxi / taxi) |
 | Prometheus| http://localhost:9090 |
+
+### Fluxo rápido (curl)
+
+Gerar token (`keys/test-private.pem` — ver seção JWT):
+
+```bash
+TOK=$(bun run mint-jwt passageiro)
+KEY=$(uuidgen)
+curl -s -X POST http://localhost:3000/corridas \
+  -H "Authorization: Bearer $TOK" \
+  -H "Idempotency-Key: $KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"origem":"A","destino":"B"}'
+```
+
+Motorista altera status:
+
+```bash
+MT=$(bun run mint-jwt motorista)
+curl -s -X PATCH "http://localhost:3000/corridas/1/status" \
+  -H "Authorization: Bearer $MT" \
+  -H "Content-Type: application/json" \
+  -d '{"status":"ACEITA"}'
+```
 
 ## Desenvolvimento local (sem Docker nas apps)
 
@@ -49,17 +73,19 @@ bun run mint-jwt passageiro
 bun run mint-jwt motorista
 ```
 
+## Testes
+
+```bash
+bun run --cwd apps/api test
+# integração (MySQL + Rabbit + Redis rodando):
+INTEGRATION=1 bun run --cwd apps/api test
+```
+
 ## Métricas (fundação)
 
 API e worker expõem `GET /metrics` (texto Prometheus mínimo) para o job no `prometheus.yml`. Métricas de negócio/latência ficam na Parte 2.
 
 Após subir o compose, targets em http://localhost:9090/targets devem marcar `api` e `worker` como **UP** (pode levar ~15s).
-
-## Testes
-
-```bash
-bun run --cwd apps/api test
-```
 
 ## Declaração de uso de IA
 
@@ -74,6 +100,7 @@ apps/ui       # Vite + React
 packages/shared
 infra/        # MySQL init, etc.
 observability/prometheus
+.github/workflows/ci.yml
 ```
 
 Artifatos do desafio (Partes 2–3): `observability/alerts*.yml`, `loadtest/`, `k8s/` — em construção.

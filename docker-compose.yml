@@ -105,10 +105,17 @@ services:
       - '3001:3001'
     environment:
       PORT: '3001'
+      MYSQL_HOST: mysql
+      MYSQL_PORT: '3306'
+      MYSQL_USER: taxi
+      MYSQL_PASSWORD: taxi
+      MYSQL_DATABASE: taxi
       REDIS_URL: redis://redis:6379
       RABBITMQ_URL: amqp://taxi:taxi@rabbitmq:5672
       MONGODB_URI: mongodb://mongo:27017/taxi_audit
     depends_on:
+      mysql:
+        condition: service_healthy
       redis:
         condition: service_healthy
       rabbitmq:

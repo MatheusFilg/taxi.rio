@@ -6,21 +6,24 @@ Atualizar conforme o desafio avança.
 
 ## O que ainda não foi feito
 
-- JWT, POST/PATCH corridas, idempotência, cache e Mongo no worker (lógica de negócio).
-- Pipeline GitHub Actions.
-- Partes 2 e 3 (métricas `/metrics`, OTel, alertas, k6, k8s).
+- Partes 2 e 3 (métricas avançadas, logs JSON/trace_id completos, OTel, alertas, k6, k8s, KEDA).
 - Vídeo de apresentação não gravado.
+- OpenAPI/Swagger na API (portal dedicado pendente).
+- Retry worker republica manualmente (não usa delayed plugin Rabbit); DLQ após 3 falhas.
 
-## O que foi feito (Parte1-Compose)
+## O que foi feito (Parte 1)
 
-- Monorepo Bun+Turbo; `docker compose up` com MySQL, Redis, Mongo, RabbitMQ, Prometheus, api, worker, ui (skeleton + health).
-- `/metrics` mínimo (api/worker) para scrape Prometheus; Rabbit `definitions.json` montado no compose.
+- Compose completo; JWT RS256; POST/PATCH/GET `/corridas`; idempotência HTTP; cache Redis (worker SET + DEL na API).
+- Worker: dedup `processed_events`, Mongo `eventos`, Redis projeção, D10 retry/DLQ básico.
+- UI mínima (token, criar, GET, motorista PATCH).
+- CI GitHub Actions: lint, test, build apps + imagens docker.
+- Testes: health + auth 401/403 + integração opcional `INTEGRATION=1`.
 
 ## O que faríamos com mais tempo
 
 - KEDA + demonstração no k6 (bônus Parte 3).
-- Mais cenários de teste além do mínimo (feliz + 2 falhas).
+- E2E Probe automatizado no Maestri a cada Shipped de UI.
 
 ## Riscos abertos
 
-- Estouar 6–8 h antes de Parte 1 sólida — mitigação: priorizar PDF e registrar cortes aqui.
+- Estourar 6–8 h antes de Parte 2 sólida — mitigação: priorizar PDF e registrar cortes aqui.
