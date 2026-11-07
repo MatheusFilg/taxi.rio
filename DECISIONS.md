@@ -47,7 +47,17 @@ Formato: contexto → alternativas → escolha → trade-off.
 - **Escolha:** **Manter RabbitMQ** para este desafio (roteamento, filas de trabalho, métricas de fila na Parte 2).
 - **Trade-off:** Se fosse greenfield *sem* restrição, poderia avaliar NATS para simplicidade — aqui a restrição e o domínio “evento de corrida” favorecem Rabbit com exchange + filas dedicadas ao worker.
 
-> *Topologia concreta (DLQ, exchange) — entrada pendente após sparring.*
+---
+
+## D9 — RabbitMQ: exchange direct + fila única (confirmado 2026-11-07)
+
+- **Contexto:** Dois eventos (`corrida.criada`, `corrida.status_alterado`); um worker; Parte 2 mede fila.
+- **Alternativas:** **Direct** + 1 fila vs **Topic** + 1 fila vs 2 filas por tipo.
+- **Escolha:** Exchange tipo **direct** (ex.: `taxi.direct`); routing keys **exatas** `corrida.criada` e `corrida.status_alterado`; **uma fila** `taxi.worker` com os dois bindings; worker distingue pelo envelope/`event` no `packages/shared`.
+- **Escalabilidade (não implementado):** com mais **famílias** de eventos (ex.: `pagamento.*`, `motorista.*`) ou dezenas de tipos, **topic** + padrão `corrida.#` reduziria redesenho de bindings — YAGNI com só 2 eventos.
+- **Trade-off:** Direct é mais simples e defensável no desafio; perde flexibilidade de wildcard até migrar exchange/fila.
+
+> *DLQ / retries — sparring pergunta 2.*
 
 ---
 

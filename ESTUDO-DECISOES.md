@@ -294,12 +294,27 @@ curl -s -w "\n%{http_code}\n" \
 
 ---
 
+## D9 — RabbitMQ pergunta 1: direct vs topic (confirmado)
+
+**Sua decisão:** só **2 eventos** no domínio → **direct**; **topic** faria mais sentido com outras famílias ou muito mais tipos.
+
+| Peça | Valor (rascunho implementável) |
+|------|--------------------------------|
+| Exchange | `taxi.direct` (tipo `direct`) |
+| Routing keys | `corrida.criada`, `corrida.status_alterado` |
+| Fila | `taxi.worker` (única) |
+| Consumidor | `apps/worker` — switch por `event` no JSON |
+
+**Como explicar escalabilidade em 30s:** “Hoje usei direct com duas routing keys fixas porque são só dois eventos — o broker roteia por nome exato e o worker usa uma fila. Se o produto ganhasse várias famílias (corrida, pagamento, notificação), eu migraria para topic ou filas por domínio; não paguei essa complexidade no MVP do desafio.”
+
+---
+
 ## Sparring ainda em aberto (não decidir sozinho)
 
 Registrar em `DECISIONS.md` assim que você escolher:
 
-- ~~JWT~~ → **D8 fechado** (`DECISIONS.md` + este documento)
-- RabbitMQ: exchange, filas, routing, DLQ
+- ~~JWT~~ → **D8 fechado**
+- ~~Exchange/fila~~ → **D9** (direct + fila única); falta **DLQ / retries**
 - Idempotência: `Idempotency-Key` + constraint MySQL + dedup no worker
 - Cache: cache-aside no GET (API lê Redis; worker escreve)
 - Cluster local Parte 3: kind vs k3d vs minikube
