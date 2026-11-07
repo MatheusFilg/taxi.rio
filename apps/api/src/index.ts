@@ -1,5 +1,5 @@
 import Fastify from 'fastify';
-import { RABBIT } from '@taxi/shared';
+import { RABBIT, renderPrometheusMetrics } from '@taxi/shared';
 
 const port = Number(process.env.PORT ?? 3000);
 const host = process.env.HOST ?? '0.0.0.0';
@@ -11,6 +11,12 @@ app.get('/health', async () => ({
   service: 'api',
   rabbit: RABBIT.exchange,
 }));
+
+app.get('/metrics', async (_req, reply) => {
+  return reply
+    .header('Content-Type', 'text/plain; version=0.0.4; charset=utf-8')
+    .send(renderPrometheusMetrics('api'));
+});
 
 app.get('/', async () => ({
   message: 'Taxi.Rio API — Parte 1 (compose fundação)',
