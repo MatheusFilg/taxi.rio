@@ -17,3 +17,4 @@ Formato: uma linha (ou bloco curto) por ocorrência, cronológico.
 - Sparring monorepo: humano escolheu **Bun + Turborepo + `packages/shared` mínimo** (JWT + fila) e **Vite + React** sem shadcn → D6/D7 em `DECISIONS.md` e `ESTUDO-DECISOES.md`.
 - Sparring JWT: exemplo completo em `ESTUDO-DECISOES.md` D8; humano **OK D8** + item 8 (motorista GET qualquer corrida) → `DECISIONS.md` D8 confirmado.
 - Próximo sparring: **RabbitMQ** (topologia + DLQ).
+- Remoto Git: **https://github.com/MatheusFilg/taxi.rio** (`origin`), push inicial da branch `master` (6 commits de processo/decisões).
