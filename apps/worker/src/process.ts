@@ -84,7 +84,7 @@ export async function handleMessage(
   }
   let snapshot: Record<string, unknown> | null = null;
   if (envelope.event === RABBIT.routing.corridaCriada) {
-    const p = envelope.payload as CorridaCriadaPayload;
+    const p = envelope.payload as unknown as CorridaCriadaPayload;
     snapshot =
       (await loadCorrida(deps.pool, p.corrida_id)) ?? {
         id: p.corrida_id,
@@ -94,7 +94,7 @@ export async function handleMessage(
         status: p.status,
       };
   } else if (envelope.event === RABBIT.routing.statusAlterado) {
-    const p = envelope.payload as CorridaStatusAlteradoPayload;
+    const p = envelope.payload as unknown as CorridaStatusAlteradoPayload;
     snapshot = await loadCorrida(deps.pool, p.corrida_id);
     if (snapshot) snapshot.status = p.status;
   } else {

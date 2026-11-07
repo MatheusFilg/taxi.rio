@@ -156,14 +156,14 @@ export async function corridaRoutes(app: FastifyInstance): Promise<void> {
         return reply.send(cached);
       }
       const pool = getPool();
-      const [rows] = await pool.query<CorridaRow[]>(
+      const [rows] = await pool.query<RowDataPacket[]>(
         'SELECT id, passageiro_id, origem, destino, status, created_at, updated_at FROM corridas WHERE id = ?',
         [id],
       );
       if (rows.length === 0) {
         return reply.code(404).send({ error: 'Corrida não encontrada' });
       }
-      const row = rows[0];
+      const row = rows[0] as unknown as CorridaRow;
       if (perfil === 'passageiro' && row.passageiro_id !== request.user.sub) {
         return reply.code(403).send({ error: 'Forbidden' });
       }

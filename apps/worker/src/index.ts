@@ -19,7 +19,7 @@ const redisUrl = process.env.REDIS_URL ?? 'redis://localhost:6379';
 const mongoUri =
   process.env.MONGODB_URI ?? 'mongodb://localhost:27017/taxi_audit';
 
-async function waitForRabbit(): Promise<amqp.Connection> {
+async function waitForRabbit() {
   for (let i = 0; i < 30; i++) {
     try {
       return await amqp.connect(rabbitUrl);
@@ -100,7 +100,7 @@ async function main() {
 
   await ch.consume(
     RABBIT.workerQueue,
-    async (msg) => {
+    async (msg: amqp.ConsumeMessage | null) => {
       if (!msg) return;
       const rk = msg.fields.routingKey;
       console.log(`[worker] recebido`, rk);

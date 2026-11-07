@@ -20,11 +20,8 @@ export async function registerAuth(app: FastifyInstance): Promise<void> {
   const publicKey = fs.readFileSync(keyPath, 'utf8');
   await app.register(fastifyJwt, {
     secret: { public: publicKey },
-    verify: {
-      algorithms: ['RS256'],
-      issuer: 'taxi-rio-test',
-      audience: 'taxi-rio-api',
-    },
+    verify: { algorithms: ['RS256'] },
+    decode: { complete: true },
   });
 }
 
