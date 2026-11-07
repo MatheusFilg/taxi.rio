@@ -1,3 +1,5 @@
+export { renderPrometheusMetrics } from './metrics';
+
 export type Perfil = 'passageiro' | 'motorista';
 
 export interface TaxiJwtClaims {
