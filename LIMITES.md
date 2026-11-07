@@ -14,6 +14,7 @@ Atualizar conforme o desafio avança.
 ## O que foi feito (Parte1-Compose)
 
 - Monorepo Bun+Turbo; `docker compose up` com MySQL, Redis, Mongo, RabbitMQ, Prometheus, api, worker, ui (skeleton + health).
+- `/metrics` mínimo (api/worker) para scrape Prometheus; Rabbit `definitions.json` montado no compose.
 
 ## O que faríamos com mais tempo
 

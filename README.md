@@ -33,12 +33,27 @@ bun run --cwd apps/ui dev
 
 ## JWT de teste
 
-Chaves **fictícias** em `keys/` (privada no `.gitignore`). Gerar token:
+Chaves **fictícias** só para desenvolvimento. O repositório inclui `keys/test-public.pem` (verificação). A **privada não vai pro git** — gere uma vez por clone:
+
+```bash
+mkdir -p keys
+openssl genrsa -out keys/test-private.pem 2048
+openssl rsa -in keys/test-private.pem -pubout -out keys/test-public.pem
+chmod 600 keys/test-private.pem
+```
+
+Gerar token (precisa de `bun install` na raiz):
 
 ```bash
 bun run mint-jwt passageiro
 bun run mint-jwt motorista
 ```
+
+## Métricas (fundação)
+
+API e worker expõem `GET /metrics` (texto Prometheus mínimo) para o job no `prometheus.yml`. Métricas de negócio/latência ficam na Parte 2.
+
+Após subir o compose, targets em http://localhost:9090/targets devem marcar `api` e `worker` como **UP** (pode levar ~15s).
 
 ## Testes
 
