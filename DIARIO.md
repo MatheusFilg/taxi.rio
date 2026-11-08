@@ -7,6 +7,7 @@
 - **Review correlation shipped:** Parte2-Correlation-Logs; Sentinel PASS; commits `8cbe8a7` + `a1ea944`; testes correlation/log 6/6; Maestri `Review-Parte2-Correlation-Logs-Sentinel`; próximo Epic — Rabbit-Metrics-B, HTTP metrics, OTel.
 - **Rabbit metrics B shipped:** Parte2-Rabbit-Metrics-B; Sentinel PASS (`d62d98d`); PromQL `taxi.worker`; target rabbitmq UP com worker down; Maestri `Review-Parte2-Rabbit-Metrics-B-Sentinel`.
 - **Metrics HTTP shipped:** Parte2-Metrics-HTTP; Sentinel PASS (`05967d5`+`fe0015b`+`38f9dd4`); prom-client; `metrics.test.ts` pass; Maestri `Review-Parte2-Metrics-HTTP-Sentinel`.
+- **OTel Tempo Grafana shipped:** Parte2-OTel-Tempo-Grafana; Sentinel PASS (`1b1ef11`+`9618bcc`+`2658ef9`); Grafana/Tempo smoke 200; tracing tests; Maestri `Review-Parte2-OTel-Tempo-Grafana-Sentinel`.
 
 ## 2026-11-07
 

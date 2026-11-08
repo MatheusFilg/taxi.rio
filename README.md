@@ -111,7 +111,7 @@ Após subir o compose, targets em http://localhost:9090/targets devem marcar `ap
 
 **Tempo** + **Grafana** no compose; datasources **Prometheus** e **Tempo** provisionados (sem Loki). Logs continuam JSON no stdout (`docker compose logs api worker | jq`).
 
-Export OTLP (próximo passo Nexus/Relay nas apps): `OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317` (gRPC) ou `http://tempo:4318` (HTTP). Trace alvo: `POST /corridas` → publish Rabbit → consumer worker.
+Com compose, api e worker já exportam via `OTEL_EXPORTER_OTLP_ENDPOINT=tempo:4317` (gRPC); HTTP em `:4318`. Trace alvo: `POST /corridas` → publish Rabbit (header `traceparent`) → consumer worker — busca no Grafana (datasource Tempo).
 
 ## Declaração de uso de IA
 
