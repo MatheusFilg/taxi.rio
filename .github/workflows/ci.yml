@@ -20,6 +20,11 @@ jobs:
           bun-version: '1.4.2'
       - name: Install
         run: bun install --frozen-lockfile
+      - name: JWT test keys (não commitadas; ver README)
+        run: |
+          mkdir -p keys
+          openssl genrsa -out keys/test-private.pem 2048
+          openssl rsa -in keys/test-private.pem -pubout -out keys/test-public.pem
       - name: Lint
         run: bun run lint
       - name: Test

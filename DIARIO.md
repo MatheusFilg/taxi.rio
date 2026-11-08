@@ -1,5 +1,9 @@
 # Diário de bordo
 
+## 2026-11-08
+
+- **CI GitHub:** push OK; 1ª falha Bun 1.2 vs lockfile 1.4; 2ª falha testes sem `test-private.pem` → fix Bun 1.4.2 + openssl no workflow.
+
 ## 2026-11-07
 
 - **Parte1-negócio Shipped:** Sentinel SHIP_READY (`68c18c0`); JWT/corridas/worker/UI/CI; fix lint+test worker.
