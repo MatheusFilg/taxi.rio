@@ -101,7 +101,9 @@ Painel: `https://github.com/MatheusFilg/taxi.rio/actions` (após o workflow esta
 
 API e worker expõem `GET /metrics` (texto Prometheus mínimo) para o job no `prometheus.yml`. Métricas de negócio/latência ficam na Parte 2.
 
-Após subir o compose, targets em http://localhost:9090/targets devem marcar `api` e `worker` como **UP** (pode levar ~15s).
+RabbitMQ expõe métricas no plugin **rabbitmq_prometheus** (`:15692`); o job `rabbitmq` no Prometheus coleta `rabbitmq_queue_messages_ready` da fila `taxi.worker` (D14 opção B — selector em `packages/shared` `RABBIT_QUEUE_PROMETHEUS`).
+
+Após subir o compose, targets em http://localhost:9090/targets devem marcar `api`, `worker` e `rabbitmq` como **UP** (pode levar ~15s). Query de smoke: `rabbitmq_queue_messages_ready{queue="taxi.worker"}`.
 
 ## Declaração de uso de IA
 

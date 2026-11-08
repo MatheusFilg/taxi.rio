@@ -49,12 +49,15 @@ services:
     ports:
       - '5672:5672'
       - '15672:15672'
+      # D14 opção B — plugin rabbitmq_prometheus (scrape messages_ready em taxi.worker)
+      - '15692:15692'
     environment:
       RABBITMQ_DEFAULT_USER: taxi
       RABBITMQ_DEFAULT_PASS: taxi
     volumes:
       - ./infra/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
       - ./infra/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
+      - ./infra/rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
     healthcheck:
       test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
       interval: 5s

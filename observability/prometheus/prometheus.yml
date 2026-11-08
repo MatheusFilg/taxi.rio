@@ -13,3 +13,8 @@ scrape_configs:
     static_configs:
       - targets: ['worker:3001']
     metrics_path: /metrics
+  # D14 opção B: fila taxi.worker via rabbitmq_queue_messages_ready (independente do worker)
+  - job_name: rabbitmq
+    static_configs:
+      - targets: ['rabbitmq:15692']
+    metrics_path: /metrics

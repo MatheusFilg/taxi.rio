@@ -22,6 +22,12 @@ export const RABBIT = {
   },
 } as const;
 
+/** D14 opção B — nome da série e selector para alertas (Gauge / Prometheus). */
+export const RABBIT_QUEUE_PROMETHEUS = {
+  messagesReadyMetric: 'rabbitmq_queue_messages_ready',
+  workerMessagesReadySelector: `rabbitmq_queue_messages_ready{queue="${RABBIT.workerQueue}",vhost="/"}`,
+} as const;
+
 export type CorridaEventType =
   | typeof RABBIT.routing.corridaCriada
   | typeof RABBIT.routing.statusAlterado;
