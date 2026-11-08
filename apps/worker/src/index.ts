@@ -2,7 +2,13 @@ import amqp from 'amqplib';
 import Redis from 'ioredis';
 import mysql from 'mysql2/promise';
 import { MongoClient } from 'mongodb';
-import { RABBIT, renderPrometheusMetrics } from '@taxi/shared';
+import { RABBIT } from '@taxi/shared';
+import {
+  getWorkerMetricsText,
+  messageProcessingDurationSeconds,
+  messagesFailedTotal,
+  messagesProcessedTotal,
+} from './metrics.js';
 import { correlationIdFromBody, logWorker } from './log.js';
 import {
   handleMessage,
@@ -50,7 +56,7 @@ async function main() {
   const server = Bun.serve({
     port,
     hostname: host,
-    fetch(req) {
+    async fetch(req) {
       const url = new URL(req.url);
       if (url.pathname === '/health') {
         return Response.json({
@@ -60,7 +66,7 @@ async function main() {
         });
       }
       if (url.pathname === '/metrics') {
-        return new Response(renderPrometheusMetrics('worker'), {
+        return new Response(await getWorkerMetricsText(), {
           headers: {
             'Content-Type': 'text/plain; version=0.0.4; charset=utf-8',
           },
@@ -104,8 +110,12 @@ async function main() {
     async (msg: amqp.ConsumeMessage | null) => {
       if (!msg) return;
       const rk = msg.fields.routingKey;
+      const endTimer = messageProcessingDurationSeconds.startTimer({
+        event: rk,
+      });
       try {
         await handleMessage(msg, { redis, pool, mongo });
+        messagesProcessedTotal.inc({ event: rk });
         ch.ack(msg);
       } catch (err) {
         logWorker('error', 'falha ao processar', {
@@ -131,8 +141,11 @@ async function main() {
             },
           );
         } else {
+          messagesFailedTotal.inc({ event: rk });
           ch.nack(msg, false, false);
         }
+      } finally {
+        endTimer();
       }
     },
     { noAck: false },
@@ -155,3 +168,6 @@ main().catch((err) => {
   });
   process.exit(1);
 });
+
+
+[You have received this identical output 3 times. Re-reading '/home/matheusf/dev/pessoal/pref-rj-teste/apps/worker/src/index.ts:raw' will not change it — use a narrower selector (path:A-B), or proceed with the edit.]
