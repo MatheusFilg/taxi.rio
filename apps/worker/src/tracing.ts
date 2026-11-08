@@ -13,9 +13,15 @@ import {
   SimpleSpanProcessor,
   type SpanExporter,
 } from '@opentelemetry/sdk-trace-node';
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import { resourceFromAttributes } from '@opentelemetry/resources';
 
 let started = false;
+let activeProvider: NodeTracerProvider | undefined;
+
+export function resetTracingForTest(): void {
+  started = false;
+}
 
 export function tracingEnabled(): boolean {
   return started;
@@ -24,24 +30,33 @@ export function tracingEnabled(): boolean {
 export function otlpEndpoint(): string | undefined {
   const raw = process.env.OTEL_EXPORTER_OTLP_ENDPOINT?.trim();
   if (!raw) return undefined;
-  if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
-  return `http://${raw}`;
+  let url = raw.startsWith('http://') || raw.startsWith('https://') ? raw : `http://${raw}`;
+  if (url.includes('/v1/traces')) return url;
+  if (/:4317\/?$/.test(url)) {
+    return url.replace(/:4317\/?$/, ':4318/v1/traces');
+  }
+  return `${url.replace(/\/$/, '')}/v1/traces`;
 }
 
 export function startTracing(options?: { exporter?: SpanExporter }): void {
-  if (started) return;
+  if (started && !options?.exporter) return;
+  if (started && options?.exporter) started = false;
   const endpoint = otlpEndpoint();
   const exporter =
     options?.exporter ??
     (endpoint ? new OTLPTraceExporter({ url: endpoint }) : undefined);
   if (!exporter) return;
-  if (!process.env.OTEL_SERVICE_NAME) process.env.OTEL_SERVICE_NAME = 'worker';
+  const serviceName = process.env.OTEL_SERVICE_NAME?.trim() || 'worker';
+  process.env.OTEL_SERVICE_NAME = serviceName;
   const processor = options?.exporter
     ? new SimpleSpanProcessor(exporter)
     : new BatchSpanProcessor(exporter);
   const provider = new NodeTracerProvider({
+    resource: resourceFromAttributes({ 'service.name': serviceName }),
     spanProcessors: [processor],
   });
+  void activeProvider?.shutdown().catch(() => undefined);
+  activeProvider = provider;
   provider.register({ propagator: new W3CTraceContextPropagator() });
   started = true;
 }

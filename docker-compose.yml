@@ -125,7 +125,7 @@ services:
       RABBITMQ_URL: amqp://taxi:taxi@rabbitmq:5672
       JWT_PUBLIC_KEY_PATH: /app/keys/test-public.pem
       OTEL_SERVICE_NAME: api
-      OTEL_EXPORTER_OTLP_ENDPOINT: tempo:4317
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318/v1/traces
     volumes:
       - ./keys/test-public.pem:/app/keys/test-public.pem:ro
     depends_on:
@@ -155,7 +155,7 @@ services:
       RABBITMQ_URL: amqp://taxi:taxi@rabbitmq:5672
       MONGODB_URI: mongodb://mongo:27017/taxi_audit
       OTEL_SERVICE_NAME: worker
-      OTEL_EXPORTER_OTLP_ENDPOINT: tempo:4317
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318/v1/traces
     depends_on:
       mysql:
         condition: service_healthy

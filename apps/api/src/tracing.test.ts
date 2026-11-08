@@ -1,8 +1,9 @@
-import { describe, expect, it } from 'bun:test';
+import { beforeEach, describe, expect, it } from 'bun:test';
+import { trace } from '@opentelemetry/api';
 import { PassThrough } from 'node:stream';
 import { InMemorySpanExporter } from '@opentelemetry/sdk-trace-node';
 import { buildApp } from './app.js';
-import { startTracing, withPublishSpan } from './tracing.js';
+import { resetTracingForTest, startTracing, withPublishSpan } from './tracing.js';
 
 const TRACE_ID = /^[0-9a-f]{32}$/;
 
@@ -16,7 +17,14 @@ function collectLogs(stream: PassThrough): Record<string, unknown>[] {
 }
 
 describe('otel', () => {
+  beforeEach(async () => {
+    resetTracingForTest();
+    const tp = trace.getTracerProvider() as { shutdown?: () => Promise<void> };
+    if (typeof tp.shutdown === 'function') await tp.shutdown();
+  });
+
   it('grava trace_id no log e abre span de publish', async () => {
+    resetTracingForTest();
     const memory = new InMemorySpanExporter();
     startTracing({ exporter: memory });
     const stream = new PassThrough();
@@ -39,9 +47,10 @@ describe('otel', () => {
     expect(traceId).toMatch(TRACE_ID);
     expect(logs.some((line) => line.trace_id === traceId)).toBe(true);
     const spans = memory.getFinishedSpans();
-    const http = spans.find((span) => span.kind === 1);
+    const http = spans.find((span) => span.name === 'GET /_otel');
     const publish = spans.find((span) => span.name === 'publish corrida.criada');
     expect(http?.spanContext().traceId).toBe(traceId);
     expect(publish?.parentSpanContext?.spanId).toBe(http?.spanContext().spanId);
+    expect(http?.resource.attributes['service.name']).toBe('api');
   });
 });

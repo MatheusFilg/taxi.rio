@@ -8,7 +8,7 @@ import {
   registerCorrelation,
 } from './correlation.js';
 import { corridaRoutes } from './routes/corridas.js';
-import { ApiLogController, bindRequestContext } from './tracing.js';
+import { ApiLogController, bindRequestContext, tracingEnabled } from './tracing.js';
 
 type LoggerConfig = Exclude<NonNullable<FastifyServerOptions['logger']>, boolean>;
 
@@ -27,7 +27,8 @@ export async function buildApp(options: BuildAppOptions = {}) {
     },
     logController: new ApiLogController({ requestIdLogLabel: 'correlation_id' }),
     childLoggerFactory(logger, bindings, opts) {
-      return logger.child({ trace_id: null, ...bindings }, opts);
+      const extra = tracingEnabled() ? {} : { trace_id: null };
+      return logger.child({ ...extra, ...bindings }, opts);
     },
   });
 

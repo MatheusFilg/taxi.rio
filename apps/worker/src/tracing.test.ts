@@ -1,13 +1,25 @@
-import { describe, expect, it } from 'bun:test';
+import { beforeEach, describe, expect, it } from 'bun:test';
 import { context, propagation, trace } from '@opentelemetry/api';
 import { InMemorySpanExporter } from '@opentelemetry/sdk-trace-node';
 import { logWorker } from './log.js';
-import { startTracing, traceCarrierFromHeaders, withConsumeSpan } from './tracing.js';
+import {
+  resetTracingForTest,
+  startTracing,
+  traceCarrierFromHeaders,
+  withConsumeSpan,
+} from './tracing.js';
 
 const TRACE_ID = /^[0-9a-f]{32}$/;
 
 describe('otel worker', () => {
+  beforeEach(async () => {
+    resetTracingForTest();
+    const tp = trace.getTracerProvider() as { shutdown?: () => Promise<void> };
+    if (typeof tp.shutdown === 'function') await tp.shutdown();
+  });
+
   it('extrai traceparent do Rabbit e grava trace_id no log', async () => {
+    resetTracingForTest();
     const memory = new InMemorySpanExporter();
     startTracing({ exporter: memory });
     const tracer = trace.getTracer('test');
