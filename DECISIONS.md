@@ -31,12 +31,12 @@ Formato: contexto → alternativas → escolha → trade-off.
 
 ---
 
-## D4 — Documentação de estudo versionada
+## D4 — Documentação de estudo local
 
-- **Contexto:** Uso de IA permitido; avaliador valoriza transparência e capacidade de explicar.
-- **Alternativas:** MD privado fora do repo vs visível no repositório.
-- **Escolha:** `ESTUDO-DECISOES.md` **no repo**, sem ocultar em `.gitignore`.
-- **Trade-off:** Conteúdo mais informal exposto; reforça honestidade e alinhamento com README (declaração de IA).
+- **Contexto:** Uso de IA permitido; o humano pediu narrativa longa **fora do repo** para preparar entrevista (não substitui `DECISIONS.md`).
+- **Alternativas:** MD versionado (transparência total) vs **local + `.gitignore`**.
+- **Escolha:** `ESTUDO-DECISOES.md` na raiz do clone, **ignorado pelo Git**; o avaliador vê só `DECISIONS.md`, `DIARIO.md`, `LIMITES.md`.
+- **Trade-off:** Conteúdo de estudo não vai no push; honestidade via README (declaração de IA) e defesa oral.
 
 ---
 
@@ -106,7 +106,7 @@ Formato: contexto → alternativas → escolha → trade-off.
 
 ## D8 — Autenticação JWT (confirmado 2026-11-07)
 
-- **Contexto:** HTTP + JWT; 401/403 por perfil; token de teste; explicar chave pública; detalhes em `ESTUDO-DECISOES.md` (D8).
+- **Contexto:** HTTP + JWT; 401/403 por perfil; token de teste; explicar chave pública; narrativa longa na nota local de estudo (D8, não versionada).
 - **Alternativas:** HS256 (secret único) vs RS256; PEM vs JWKS; login real vs tokens estáticos + `mint-jwt`.
 - **Escolha:** **RS256**; validação com **`keys/test-public.pem`** no repo; **tokens pré-gerados** no README + script `mint-jwt` opcional; claims **`sub` + `perfil`** (`passageiro` \| `motorista`); **`@fastify/jwt`** na API; UI com seletor de token de teste; **403** se passageiro acessa corrida de outro `sub`; **motorista** com token válido pode **GET** qualquer corrida (**200**) para acompanhar status na UI.
 - **Trade-off:** Sem fluxo de senha/OAuth (fora do escopo); JWKS não implementado na v1 — PEM atende o enunciato; privada só em dev (`.gitignore`).
