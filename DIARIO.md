@@ -5,6 +5,7 @@
 - **CI GitHub:** push OK; 1ª falha Bun 1.2 vs lockfile 1.4; 2ª falha testes sem `test-private.pem` → fix Bun 1.4.2 + openssl no workflow.
 - **Sparring Parte2 fechado:** D13 (Tempo+Grafana, logs JSON sem Loki, OTel na cadeia) e D14 (métrica fila opção B; alertas 5xx + fila `taxi.worker`) → registrado em `DECISIONS.md`; execução nos cards Backlog/Building.
 - **Review correlation shipped:** Parte2-Correlation-Logs; Sentinel PASS; commits `8cbe8a7` + `a1ea944`; testes correlation/log 6/6; Maestri `Review-Parte2-Correlation-Logs-Sentinel`; próximo Epic — Rabbit-Metrics-B, HTTP metrics, OTel.
+- **Rabbit metrics B shipped:** Parte2-Rabbit-Metrics-B; Sentinel PASS (`d62d98d`); PromQL `taxi.worker`; target rabbitmq UP com worker down; Maestri `Review-Parte2-Rabbit-Metrics-B-Sentinel`.
 
 ## 2026-11-07
 

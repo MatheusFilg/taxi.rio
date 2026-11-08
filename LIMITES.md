@@ -8,7 +8,8 @@ Atualizar conforme o desafio avança.
 
 - **Decidido (docs):** **D13** (Tempo+Grafana, logs JSON sem Loki, OTel na cadeia) e **D14** (métrica fila opção B; alertas 5xx + fila `taxi.worker`); ordem Epic — correlation → Rabbit B → HTTP metrics → OTel → alerts → k6.
 - **Feito (shipped):** **Parte2-Correlation-Logs** — `x-correlation-id`, logs JSON api/worker com `correlation_id`, envelope Rabbit (`8cbe8a7`, `a1ea944`); Sentinel PASS 2026-11-08.
-- **Pendente:** exporter/plugin Rabbit (métrica fila B), escopo HTTP `/metrics` conforme PDF, Tempo/Grafana/OTLP + `trace_id`, rules de alerta, k6.
+- **Feito (shipped):** **D14 métrica fila (opção B)** — Parte2-Rabbit-Metrics-B; plugin `:15692`, scrape job `rabbitmq`, `RABBIT_QUEUE_PROMETHEUS` (`d62d98d`); Sentinel PASS 2026-11-08. (Alertas D14 ainda pendentes.)
+- **Pendente:** escopo HTTP `/metrics` conforme PDF, Tempo/Grafana/OTLP + `trace_id`, rules de alerta, k6.
 
 ## O que ainda não foi feito
 
