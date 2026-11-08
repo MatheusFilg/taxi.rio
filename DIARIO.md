@@ -9,6 +9,7 @@
 - **Metrics HTTP shipped:** Parte2-Metrics-HTTP; Sentinel PASS (`05967d5`+`fe0015b`+`38f9dd4`); prom-client; `metrics.test.ts` pass; Maestri `Review-Parte2-Metrics-HTTP-Sentinel`.
 - **OTel Tempo Grafana shipped:** Parte2-OTel-Tempo-Grafana; Sentinel PASS (`1b1ef11`+`9618bcc`+`2658ef9`); Grafana/Tempo smoke 200; tracing tests; Maestri `Review-Parte2-OTel-Tempo-Grafana-Sentinel`.
 - **Alerts shipped:** Parte2-Alerts; Sentinel PASS (`f7537f4`); TaxiApiHigh5xxRate + TaxiWorkerQueueBacklog; Maestri `Review-Parte2-Alerts-Sentinel`.
+- **k6 shipped:** Parte2-k6-Load; Loadsmith PASS (`3bb2409`); smoke POST/GET corridas JWT; Maestri `Card-Parte2-k6-Load` → Shipped.
 
 ## 2026-11-07
 
