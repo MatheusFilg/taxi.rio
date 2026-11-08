@@ -6,7 +6,6 @@ import {
   type CorridaStatus,
   type CorridaStatusAlteradoPayload,
 } from '@taxi/shared';
-import { randomUUID } from 'node:crypto';
 import {
   getPerfil,
   requireAuth,
@@ -24,11 +23,6 @@ const VALID_STATUS: CorridaStatus[] = [
   'FINALIZADA',
   'CANCELADA',
 ];
-
-function correlationId(request: { headers: Record<string, unknown> }): string {
-  const h = request.headers['x-correlation-id'];
-  return typeof h === 'string' && h.length > 0 ? h : randomUUID();
-}
 
 export async function corridaRoutes(app: FastifyInstance): Promise<void> {
   app.post(
@@ -78,7 +72,6 @@ export async function corridaRoutes(app: FastifyInstance): Promise<void> {
           JSON.stringify(responseBody),
         ],
       );
-      const corrId = correlationId(request);
       const payload: CorridaCriadaPayload = {
         corrida_id: corridaId,
         passageiro_id: passageiroId,
@@ -86,10 +79,14 @@ export async function corridaRoutes(app: FastifyInstance): Promise<void> {
         origem: responseBody.origem,
         destino: responseBody.destino,
       };
-      await publishCorridaEvent(
+      const eventId = await publishCorridaEvent(
         RABBIT.routing.corridaCriada,
         payload,
-        corrId,
+        request.id,
+      );
+      request.log.info(
+        { event_id: eventId, routing_key: RABBIT.routing.corridaCriada },
+        'evento publicado',
       );
       return reply.code(201).send(responseBody);
     },
@@ -122,15 +119,18 @@ export async function corridaRoutes(app: FastifyInstance): Promise<void> {
         id,
       ]);
       await invalidateCorridaCache(id);
-      const corrId = correlationId(request);
       const payload: CorridaStatusAlteradoPayload = {
         corrida_id: id,
         status,
       };
-      await publishCorridaEvent(
+      const eventId = await publishCorridaEvent(
         RABBIT.routing.statusAlterado,
         payload,
-        corrId,
+        request.id,
+      );
+      request.log.info(
+        { event_id: eventId, routing_key: RABBIT.routing.statusAlterado },
+        'evento publicado',
       );
       return reply.code(200).send({ id, status });
     },

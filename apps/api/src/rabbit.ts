@@ -17,20 +17,29 @@ async function getChannel(): Promise<amqp.Channel> {
   return channel;
 }
 
+export function buildCorridaEnvelope<TPayload>(
+  event: CorridaEventType,
+  payload: TPayload,
+  correlationId: string,
+  eventId: string = randomUUID(),
+  occurredAt: string = new Date().toISOString(),
+): CorridaEventEnvelope<TPayload> {
+  return {
+    event,
+    event_id: eventId,
+    correlation_id: correlationId,
+    occurred_at: occurredAt,
+    payload,
+  };
+}
+
 export async function publishCorridaEvent<TPayload>(
   event: CorridaEventType,
   payload: TPayload,
   correlationId: string,
 ): Promise<string> {
   const ch = await getChannel();
-  const event_id = randomUUID();
-  const envelope: CorridaEventEnvelope<TPayload> = {
-    event,
-    event_id,
-    correlation_id: correlationId,
-    occurred_at: new Date().toISOString(),
-    payload,
-  };
+  const envelope = buildCorridaEnvelope(event, payload, correlationId);
   const routingKey =
     event === RABBIT.routing.corridaCriada
       ? RABBIT.routing.corridaCriada
@@ -41,5 +50,5 @@ export async function publishCorridaEvent<TPayload>(
     Buffer.from(JSON.stringify(envelope)),
     { persistent: true, contentType: 'application/json' },
   );
-  return event_id;
+  return envelope.event_id;
 }

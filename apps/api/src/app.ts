@@ -1,25 +1,35 @@
-import Fastify from 'fastify';
+import Fastify, { LogController, type FastifyServerOptions } from 'fastify';
 import { RABBIT, renderPrometheusMetrics } from '@taxi/shared';
 import { registerAuth } from './auth.js';
+import {
+  CORRELATION_HEADER,
+  correlationIdFromHeader,
+  registerCorrelation,
+} from './correlation.js';
 import { corridaRoutes } from './routes/corridas.js';
 
-export async function buildApp() {
+type LoggerConfig = Exclude<NonNullable<FastifyServerOptions['logger']>, boolean>;
+
+export type BuildAppOptions = {
+  logDestination?: LoggerConfig['stream'];
+};
+
+export async function buildApp(options: BuildAppOptions = {}) {
   const app = Fastify({
     logger: {
       level: 'info',
-      serializers: {
-        req(request) {
-          return {
-            method: request.method,
-            url: request.url,
-            correlation_id:
-              (request.headers['x-correlation-id'] as string) ?? undefined,
-          };
-        },
-      },
+      ...(options.logDestination ? { stream: options.logDestination } : {}),
+    },
+    genReqId(req) {
+      return correlationIdFromHeader(req.headers[CORRELATION_HEADER]);
+    },
+    logController: new LogController({ requestIdLogLabel: 'correlation_id' }),
+    childLoggerFactory(logger, bindings, opts) {
+      return logger.child({ trace_id: null, ...bindings }, opts);
     },
   });
 
+  registerCorrelation(app);
   await registerAuth(app);
   await app.register(corridaRoutes);
 
