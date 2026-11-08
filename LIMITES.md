@@ -12,7 +12,7 @@ Atualizar conforme o desafio avança.
 - **Feito (shipped):** **Parte2-Metrics-HTTP** — prom-client API (rate/latency/`status_code`) + worker processamento; `API_HTTP_PROMETHEUS.api5xxRateSelector` (`05967d5`, `fe0015b`, `38f9dd4`); Sentinel PASS 2026-11-08.
 - **Feito (shipped):** **Parte2-OTel-Tempo-Grafana** — compose Grafana/Tempo OTLP; api/worker export + `trace_id` logs + W3C via Rabbit (`1b1ef11`, `9618bcc`, `2658ef9`); Sentinel PASS 2026-11-08.
 - **Feito (shipped):** **D14 alertas** — Parte2-Alerts; `alerts.yml` + `alerts-prometheusrule.yaml` (5xx + fila D14-B) (`f7537f4`); Sentinel PASS 2026-11-08.
-- **Pendente:** k6.
+- **Feito (shipped):** **Parte2-k6-Load** — `loadtest/smoke-corridas.js`, `run-smoke.sh`, `RELATORIO.md`; smoke POST/GET `/corridas` com JWT; Loadsmith PASS 2026-11-08.
 
 ## O que ainda não foi feito
 
