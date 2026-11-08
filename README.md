@@ -133,4 +133,4 @@ observability/grafana/provisioning
 
 Alertas D14 em `observability/alerts.yml` (compose) e `observability/alerts-prometheusrule.yaml` (K8s); UI em http://localhost:9090/alerts. Ver `observability/README.md`.
 
-Artifatos restantes (Partes 2–3): `loadtest/`, `k8s/`.
+Smoke k6: `bash loadtest/run-smoke.sh` — ver `loadtest/RELATORIO.md`. Artefatos restantes (Parte 3): `k8s/`.
