@@ -6,7 +6,7 @@ Atualizar conforme o desafio avança.
 
 ## O que ainda não foi feito
 
-- **GitHub Actions no remoto:** workflow em `.github/workflows/ci.yml` precisa estar em `main` no GitHub (push exige escopo `workflow` ou SSH).
+- **GitHub Actions:** verde em https://github.com/MatheusFilg/taxi.rio/actions (run 42508732127, 2026-11-08).
 - Partes 2 e 3 (métricas avançadas, logs JSON/trace_id completos, OTel, alertas, k6, k8s, KEDA).
 - Vídeo de apresentação não gravado.
 - OpenAPI/Swagger na API (portal dedicado pendente).
