@@ -11,7 +11,8 @@ Atualizar conforme o desafio avança.
 - **Feito (shipped):** **D14 métrica fila (opção B)** — Parte2-Rabbit-Metrics-B; plugin `:15692`, scrape job `rabbitmq`, `RABBIT_QUEUE_PROMETHEUS` (`d62d98d`); Sentinel PASS 2026-11-08. (Alertas D14 ainda pendentes.)
 - **Feito (shipped):** **Parte2-Metrics-HTTP** — prom-client API (rate/latency/`status_code`) + worker processamento; `API_HTTP_PROMETHEUS.api5xxRateSelector` (`05967d5`, `fe0015b`, `38f9dd4`); Sentinel PASS 2026-11-08.
 - **Feito (shipped):** **Parte2-OTel-Tempo-Grafana** — compose Grafana/Tempo OTLP; api/worker export + `trace_id` logs + W3C via Rabbit (`1b1ef11`, `9618bcc`, `2658ef9`); Sentinel PASS 2026-11-08.
-- **Pendente:** rules de alerta (5xx + fila), k6.
+- **Feito (shipped):** **Parte2-Alerts** — `alerts.yml` + `alerts-prometheusrule.yaml` (5xx + fila D14-B).
+- **Pendente:** k6.
 
 ## O que ainda não foi feito
 

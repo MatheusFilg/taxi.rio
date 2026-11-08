@@ -1,0 +1,45 @@
+# Taxi.Rio — regras de alerta Prometheus (compose)
+#
+# D14 (DECISIONS.md): dois alertas obrigatórios na Parte 2 —
+#   (1) taxa de 5xx na API via métricas HTTP do job `api` (Parte2-Metrics-HTTP);
+#   (2) fila worker alta via opção B — plugin rabbitmq_prometheus, independente do worker
+#       (Parte2-Rabbit-Metrics-B).
+#
+# Expressões alinhadas a packages/shared:
+#   API_HTTP_PROMETHEUS.api5xxRateSelector
+#   RABBIT_QUEUE_PROMETHEUS.workerMessagesReadySelector
+#
+# Limiares (dev/defensável): 5% de 5xx por 2m absorve pico curto; >100 ready por 5m
+# indica backlog sustentado na fila taxi.worker (worker lento ou parado).
+
+groups:
+  - name: taxi_d14
+    rules:
+      - alert: TaxiApiHigh5xxRate
+        expr: |
+          (
+            sum(rate(http_requests_total{job="api",status_code=~"5.."}[5m]))
+            / clamp_min(sum(rate(http_requests_total{job="api"}[5m])), 1e-9)
+          ) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+          service: api
+        annotations:
+          summary: Taxa de HTTP 5xx elevada na API
+          description: |
+            Mais de 5% das requisições da API foram 5xx nos últimos 5m (D14).
+            Selector compartilhado: API_HTTP_PROMETHEUS.api5xxRateSelector.
+
+      - alert: TaxiWorkerQueueBacklog
+        expr: rabbitmq_queue_messages_ready{queue="taxi.worker",vhost="/"} > 100
+        for: 5m
+        labels:
+          severity: warning
+          service: worker
+          queue: taxi.worker
+        annotations:
+          summary: Fila taxi.worker com backlog alto
+          description: |
+            messages_ready acima de 100 por 5m na fila taxi.worker (D14 opção B —
+            métrica do Rabbit, não do worker). Selector: RABBIT_QUEUE_PROMETHEUS.workerMessagesReadySelector.

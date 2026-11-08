@@ -1,0 +1,41 @@
+# D14 — cópia K8s (Parte 3) das mesmas regras carregadas em compose via alerts.yml.
+# Prometheus Operator: PrometheusRule com grupos idênticos; justificativa D14 nos annotations.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: taxi-d14-alerts
+  labels:
+    app: taxi-rio
+    parte: "2"
+spec:
+  groups:
+    - name: taxi_d14
+      rules:
+        - alert: TaxiApiHigh5xxRate
+          expr: |
+            (
+              sum(rate(http_requests_total{job="api",status_code=~"5.."}[5m]))
+              / clamp_min(sum(rate(http_requests_total{job="api"}[5m])), 1e-9)
+            ) > 0.05
+          for: 2m
+          labels:
+            severity: warning
+            service: api
+          annotations:
+            summary: Taxa de HTTP 5xx elevada na API
+            description: |
+              D14 alerta (1): derivado de API_HTTP_PROMETHEUS.api5xxRateSelector
+              (http_requests_total com label status_code). Opção B de fila não substitui este sinal.
+
+        - alert: TaxiWorkerQueueBacklog
+          expr: rabbitmq_queue_messages_ready{queue="taxi.worker",vhost="/"} > 100
+          for: 5m
+          labels:
+            severity: warning
+            service: worker
+            queue: taxi.worker
+          annotations:
+            summary: Fila taxi.worker com backlog alto
+            description: |
+              D14 alerta (2): RABBIT_QUEUE_PROMETHEUS.workerMessagesReadySelector —
+              scrape job rabbitmq:15692; fila observável com worker down (métrica B).
