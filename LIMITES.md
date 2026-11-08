@@ -4,10 +4,15 @@ Atualizar conforme o desafio avança.
 
 ---
 
+## Parte 2 (em construção)
+
+- **Decidido (docs):** **D13** (Tempo+Grafana, logs JSON sem Loki, OTel na cadeia) e **D14** (métrica fila opção B; alertas 5xx + fila `taxi.worker`); ordem Epic — correlation → Rabbit B → HTTP metrics → OTel → alerts → k6.
+- **Pendente:** implementação dos cards (logs JSON completos, exporter/plugin Rabbit, escopo HTTP `/metrics` conforme PDF, Tempo/Grafana/OTLP, rules de alerta, k6).
+
 ## O que ainda não foi feito
 
 - **GitHub Actions:** verde em https://github.com/MatheusFilg/taxi.rio/actions (run 42508732127, 2026-11-08).
-- Partes 2 e 3 (métricas avançadas, logs JSON/trace_id completos, OTel, alertas, k6, k8s, KEDA).
+- **Parte 3** (k8s, KEDA, bônus load); Parte 2 → ver seção em construção acima.
 - Vídeo de apresentação não gravado.
 - OpenAPI/Swagger na API (portal dedicado pendente).
 - Retry worker republica manualmente (não usa delayed plugin Rabbit); DLQ após 3 falhas.
@@ -27,4 +32,4 @@ Atualizar conforme o desafio avança.
 
 ## Riscos abertos
 
-- Estourar 6–8 h antes de Parte 2 sólida — mitigação: priorizar PDF e registrar cortes aqui.
+- Tempo de implementação da Parte 2 após sparring fechado — mitigação: seguir ordem Epic e registrar cortes aqui.
