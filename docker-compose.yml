@@ -74,6 +74,39 @@ services:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
 
+  tempo:
+    image: grafana/tempo:2.6.1
+    command: ['-config.file=/etc/tempo.yaml']
+    ports:
+      - '3200:3200'
+      - '4317:4317'
+      - '4318:4318'
+    volumes:
+      - ./observability/tempo/tempo.yaml:/etc/tempo.yaml:ro
+      - tempo_data:/var/tempo
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '-O', '-', 'http://localhost:3200/ready']
+      interval: 5s
+      timeout: 3s
+      retries: 15
+
+  grafana:
+    image: grafana/grafana:11.3.1
+    ports:
+      - '3030:3000'
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: taxi
+      GF_USERS_DEFAULT_THEME: dark
+    volumes:
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      prometheus:
+        condition: service_started
+      tempo:
+        condition: service_healthy
+
   api:
     build:
       context: .
@@ -138,3 +171,5 @@ services:
 volumes:
   mysql_data:
   mongo_data:
+  tempo_data:
+  grafana_data:

@@ -20,6 +20,8 @@ docker compose up --build
 | Worker    | http://localhost:3001/health |
 | RabbitMQ  | http://localhost:15672 (taxi / taxi) |
 | Prometheus| http://localhost:9090 |
+| Grafana   | http://localhost:3030 (admin / taxi) |
+| Tempo     | OTLP gRPC `:4317`, HTTP `:4318`; UI/query `:3200` |
 
 ### Fluxo rápido (curl)
 
@@ -49,7 +51,7 @@ curl -s -X PATCH "http://localhost:3000/corridas/1/status" \
 
 ```bash
 bun install
-docker compose up mysql redis mongo rabbitmq prometheus
+docker compose up mysql redis mongo rabbitmq prometheus tempo grafana
 bun run --cwd apps/api dev
 bun run --cwd apps/worker dev
 bun run --cwd apps/ui dev
@@ -105,6 +107,12 @@ RabbitMQ expõe métricas no plugin **rabbitmq_prometheus** (`:15692`); o job `r
 
 Após subir o compose, targets em http://localhost:9090/targets devem marcar `api`, `worker` e `rabbitmq` como **UP** (pode levar ~15s). Query de smoke: `rabbitmq_queue_messages_ready{queue="taxi.worker"}`.
 
+## Traces (D13 — infra)
+
+**Tempo** + **Grafana** no compose; datasources **Prometheus** e **Tempo** provisionados (sem Loki). Logs continuam JSON no stdout (`docker compose logs api worker | jq`).
+
+Export OTLP (próximo passo Nexus/Relay nas apps): `OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317` (gRPC) ou `http://tempo:4318` (HTTP). Trace alvo: `POST /corridas` → publish Rabbit → consumer worker.
+
 ## Declaração de uso de IA
 
 Usei assistentes de código (Cursor) para estruturar o monorepo, documentar decisões (`DECISIONS.md`, `ESTUDO-DECISOES.md`) e rascunhar implementação. Revisei e validei as escolhas de arquitetura (JWT RS256, Rabbit direct, idempotência, cache). Exemplo rejeitado/corrigido: mapeamento inicial de modelos Codex no Maestri — ajustado para **Composer + Grok** após testar limites do plano pessoal (`DIARIO.md`).
@@ -118,6 +126,8 @@ apps/ui       # Vite + React
 packages/shared
 infra/        # MySQL init, etc.
 observability/prometheus
+observability/tempo
+observability/grafana/provisioning
 .github/workflows/ci.yml
 ```
 
