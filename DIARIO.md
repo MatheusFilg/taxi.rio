@@ -8,6 +8,7 @@
 - **Rabbit metrics B shipped:** Parte2-Rabbit-Metrics-B; Sentinel PASS (`d62d98d`); PromQL `taxi.worker`; target rabbitmq UP com worker down; Maestri `Review-Parte2-Rabbit-Metrics-B-Sentinel`.
 - **Metrics HTTP shipped:** Parte2-Metrics-HTTP; Sentinel PASS (`05967d5`+`fe0015b`+`38f9dd4`); prom-client; `metrics.test.ts` pass; Maestri `Review-Parte2-Metrics-HTTP-Sentinel`.
 - **OTel Tempo Grafana shipped:** Parte2-OTel-Tempo-Grafana; Sentinel PASS (`1b1ef11`+`9618bcc`+`2658ef9`); Grafana/Tempo smoke 200; tracing tests; Maestri `Review-Parte2-OTel-Tempo-Grafana-Sentinel`.
+- **Alerts shipped:** Parte2-Alerts; Sentinel PASS (`f7537f4`); TaxiApiHigh5xxRate + TaxiWorkerQueueBacklog; Maestri `Review-Parte2-Alerts-Sentinel`.
 
 ## 2026-11-07
 
