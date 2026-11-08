@@ -99,7 +99,7 @@ Painel: `https://github.com/MatheusFilg/taxi.rio/actions` (após o workflow esta
 
 ## Métricas (fundação)
 
-API e worker expõem `GET /metrics` (texto Prometheus mínimo) para o job no `prometheus.yml`. Métricas de negócio/latência ficam na Parte 2.
+API e worker expõem `GET /metrics` (Prometheus via `prom-client`) para os jobs no `prometheus.yml`: API com `http_requests_total` / `http_request_duration_seconds` (label `status_code` para alerta 5xx D14); worker com `taxi_worker_messages_*` (fila continua no job `rabbitmq`, D14-B).
 
 RabbitMQ expõe métricas no plugin **rabbitmq_prometheus** (`:15692`); o job `rabbitmq` no Prometheus coleta `rabbitmq_queue_messages_ready` da fila `taxi.worker` (D14 opção B — selector em `packages/shared` `RABBIT_QUEUE_PROMETHEUS`).
 

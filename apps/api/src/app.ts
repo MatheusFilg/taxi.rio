@@ -1,5 +1,6 @@
 import Fastify, { LogController, type FastifyServerOptions } from 'fastify';
-import { RABBIT, renderPrometheusMetrics } from '@taxi/shared';
+import { RABBIT } from '@taxi/shared';
+import { getApiMetricsText, registerHttpMetrics } from './metrics.js';
 import { registerAuth } from './auth.js';
 import {
   CORRELATION_HEADER,
@@ -30,6 +31,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
   });
 
   registerCorrelation(app);
+  registerHttpMetrics(app);
   await registerAuth(app);
   await app.register(corridaRoutes);
 
@@ -42,7 +44,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
   app.get('/metrics', async (_req, reply) => {
     return reply
       .header('Content-Type', 'text/plain; version=0.0.4; charset=utf-8')
-      .send(renderPrometheusMetrics('api'));
+      .send(await getApiMetricsText());
   });
 
   app.get('/', async () => ({
