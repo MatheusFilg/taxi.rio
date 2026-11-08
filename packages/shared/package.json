@@ -12,5 +12,8 @@
     "build": "tsc -p tsconfig.json --emitDeclarationOnly false --noEmit false --outDir dist",
     "lint": "tsc -p tsconfig.json --noEmit",
     "test": "echo \"(shared) no tests yet\""
+  },
+  "dependencies": {
+    "prom-client": "^15.1.3"
   }
 }

@@ -1,4 +1,10 @@
-export { renderPrometheusMetrics } from './metrics';
+export {
+  API_HTTP_PROMETHEUS,
+  WORKER_PROCESS_PROMETHEUS,
+  attachTaxiServiceGauges,
+  registryToPrometheusText,
+  renderPrometheusMetrics,
+} from './metrics';
 
 export type Perfil = 'passageiro' | 'motorista';
 
