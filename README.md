@@ -85,7 +85,7 @@ INTEGRATION=1 bun run --cwd apps/api test
 
 A cada **push** ou **pull request** em `main`, o workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) executa:
 
-1. **verify** — `bun install`, `bun run lint`, `bun run test`, `bun run build`
+1. **verify** — Bun **1.4.2** (igual ao `packageManager` / `bun.lock`), `bun install`, lint, test, build
 2. **docker** — `docker compose build api worker ui` (build das imagens)
 
 Espelho local:
