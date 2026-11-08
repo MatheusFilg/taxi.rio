@@ -2,6 +2,9 @@
 
 ## 2026-11-08
 
+- **k6 demo Parte 2:** `run-live-demo.sh` 10 VUs / 2m — 0% falhas, 100% checks; portais Prometheus+Rabbit atualizados; RELATORIO com números da sessão.
+- **Contrato estudo:** humano lembrou que `ESTUDO-DECISOES.md` é **local** (não versionado); revertido D4 + `.gitignore` + README; arquivo Parte 2 permanece só na máquina.
+- **Observabilidade manual (você):** Grafana TraceQL `service.name=api` vazio; logs com `trace_id` duplicado (`null` + hex). Causa: falta `resource.service.name` no OTel + export gRPC no bundle Docker não ingere no Tempo. Fix: resource `service.name`, exporter OTLP **HTTP** `:4318/v1/traces`, log só um `trace_id`.
 - **CI GitHub:** push OK; 1ª falha Bun 1.2 vs lockfile 1.4; 2ª falha testes sem `test-private.pem` → fix Bun 1.4.2 + openssl no workflow.
 - **Sparring Parte2 fechado:** D13 (Tempo+Grafana, logs JSON sem Loki, OTel na cadeia) e D14 (métrica fila opção B; alertas 5xx + fila `taxi.worker`) → registrado em `DECISIONS.md`; execução nos cards Backlog/Building.
 - **Review correlation shipped:** Parte2-Correlation-Logs; Sentinel PASS; commits `8cbe8a7` + `a1ea944`; testes correlation/log 6/6; Maestri `Review-Parte2-Correlation-Logs-Sentinel`; próximo Epic — Rabbit-Metrics-B, HTTP metrics, OTel.

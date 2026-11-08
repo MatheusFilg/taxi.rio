@@ -1,6 +1,6 @@
 # Taxi.Rio — desafio técnico (Prefeitura / Rio)
 
-Monorepo **Bun + Turborepo**: API Fastify, worker (RabbitMQ), UI React (Vite). Ver `DECISIONS.md` e `ESTUDO-DECISOES.md`.
+Monorepo **Bun + Turborepo**: API Fastify, worker (RabbitMQ), UI React (Vite). Ver `DECISIONS.md`, `DIARIO.md`, `LIMITES.md`.
 
 ## Pré-requisitos
 
@@ -111,11 +111,11 @@ Após subir o compose, targets em http://localhost:9090/targets devem marcar `ap
 
 **Tempo** + **Grafana** no compose; datasources **Prometheus** e **Tempo** provisionados (sem Loki). Logs continuam JSON no stdout (`docker compose logs api worker | jq`).
 
-Com compose, api e worker já exportam via `OTEL_EXPORTER_OTLP_ENDPOINT=tempo:4317` (gRPC); HTTP em `:4318`. Trace alvo: `POST /corridas` → publish Rabbit (header `traceparent`) → consumer worker — busca no Grafana (datasource Tempo).
+Com compose, api e worker exportam OTLP para Tempo em `http://tempo:4318/v1/traces` (HTTP; mais confiável no bundle Bun que gRPC `:4317`). Trace alvo: `POST /corridas` → publish Rabbit (`traceparent`) → worker — Grafana **Explore → Tempo → TraceQL** `{ resource.service.name = "api" }`.
 
 ## Declaração de uso de IA
 
-Usei assistentes de código (Cursor) para estruturar o monorepo, documentar decisões (`DECISIONS.md`, `ESTUDO-DECISOES.md`) e rascunhar implementação. Revisei e validei as escolhas de arquitetura (JWT RS256, Rabbit direct, idempotência, cache). Exemplo rejeitado/corrigido: mapeamento inicial de modelos Codex no Maestri — ajustado para **Composer + Grok** após testar limites do plano pessoal (`DIARIO.md`).
+Usei assistentes de código (Cursor) para estruturar o monorepo, documentar decisões (`DECISIONS.md`, `DIARIO.md`) e rascunhar implementação. Revisei e validei as escolhas de arquitetura (JWT RS256, Rabbit direct, idempotência, cache). Exemplo rejeitado/corrigido: mapeamento inicial de modelos Codex no Maestri — ajustado para **Composer + Grok** após testar limites do plano pessoal (`DIARIO.md`).
 
 ## Estrutura
 
