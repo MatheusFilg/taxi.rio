@@ -3,6 +3,7 @@ import Redis from 'ioredis';
 import mysql from 'mysql2/promise';
 import { MongoClient } from 'mongodb';
 import { RABBIT, renderPrometheusMetrics } from '@taxi/shared';
+import { correlationIdFromBody, logWorker } from './log.js';
 import {
   handleMessage,
   MAX_RETRIES,
@@ -69,7 +70,7 @@ async function main() {
     },
   });
 
-  console.log(`Worker health on http://${host}:${port}/health`);
+  logWorker('info', `health escutando em http://${host}:${port}/health`);
 
   const conn = await waitForRabbit();
   const ch = await conn.createChannel();
@@ -96,19 +97,22 @@ async function main() {
   );
   await ch.prefetch(1);
 
-  console.log(`Aguardando mensagens em ${RABBIT.workerQueue}…`);
+  logWorker('info', `aguardando mensagens em ${RABBIT.workerQueue}`);
 
   await ch.consume(
     RABBIT.workerQueue,
     async (msg: amqp.ConsumeMessage | null) => {
       if (!msg) return;
       const rk = msg.fields.routingKey;
-      console.log(`[worker] recebido`, rk);
       try {
         await handleMessage(msg, { redis, pool, mongo });
         ch.ack(msg);
       } catch (err) {
-        console.error('[worker] erro', err);
+        logWorker('error', 'falha ao processar', {
+          correlation_id: correlationIdFromBody(msg.content.toString()),
+          routing_key: rk,
+          err: err instanceof Error ? err.message : String(err),
+        });
         const retries = retryCount(msg);
         if (retries < MAX_RETRIES) {
           const count = nextRetryCount(msg);
@@ -146,6 +150,8 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error(err);
+  logWorker('error', 'worker encerrou', {
+    err: err instanceof Error ? err.message : String(err),
+  });
   process.exit(1);
 });

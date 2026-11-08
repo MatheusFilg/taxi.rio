@@ -9,6 +9,7 @@ import {
   type CorridaCriadaPayload,
   type CorridaStatusAlteradoPayload,
 } from '@taxi/shared';
+import { logWorker } from './log.js';
 
 const MAX_RETRIES = 3;
 
@@ -78,8 +79,18 @@ export async function handleMessage(
   if (!envelope?.event_id) {
     throw new Error('mensagem inválida');
   }
+  const correlation_id = envelope.correlation_id || null;
+  logWorker('info', 'mensagem recebida', {
+    correlation_id,
+    event_id: envelope.event_id,
+    event: envelope.event,
+  });
   if (await isProcessed(deps.pool, envelope.event_id)) {
-    console.log('[worker] dedup', envelope.event_id);
+    logWorker('info', 'evento já processado', {
+      correlation_id,
+      event_id: envelope.event_id,
+      event: envelope.event,
+    });
     return;
   }
   let snapshot: Record<string, unknown> | null = null;
