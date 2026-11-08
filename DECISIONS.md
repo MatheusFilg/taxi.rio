@@ -86,6 +86,24 @@ Formato: contexto → alternativas → escolha → trade-off.
 
 ---
 
+## D13 — Observabilidade: Tempo + Grafana, logs JSON, OTel (confirmado 2026-11-08)
+
+- **Contexto:** Parte 2: correlação API → fila → worker, traces e logs defensáveis no compose.
+- **Alternativas:** Loki/Promtail vs logs JSON no stdout; Jaeger vs **Tempo**; traces só manual vs **OTel OTLP** em api/worker.
+- **Escolha:** **Grafana** com datasource **Tempo**; logs **JSON** em stdout (`docker compose logs` + `jq`/`grep`); **sem Loki**; **OpenTelemetry** exportando OTLP (trace alvo: `POST /corridas` → publish Rabbit → consumer worker); `x-correlation-id` / envelope já previstos no `packages/shared`.
+- **Trade-off:** Sem busca centralizada de logs no Grafana; compose mais leve; correlação manual log↔trace via `correlation_id` / `trace_id` até drill-down no Tempo.
+
+---
+
+## D14 — Métricas de fila (opção B) e alertas (confirmado 2026-11-08)
+
+- **Contexto:** PDF Parte 2: fila `taxi.worker` observável e alertas em Prometheus.
+- **Alternativas:** **A** — profundidade exposta pelo worker (acoplado ao processo) vs **B** — **exporter ou plugin Prometheus no RabbitMQ**.
+- **Escolha:** **Opção B**: scrape de `messages_ready` (e alinhamento em `prometheus.yml`); alertas em `observability/alerts.yml` + `observability/alerts-prometheusrule.yaml`: (1) **taxa de 5xx na API**, (2) **fila worker alta** usando métrica B; justificativa em comentário YAML.
+- **Trade-off:** Mais um componente de infra; ganha métrica de fila **independente** do worker up/down (aceite do card Rabbit-Metrics-B).
+
+---
+
 ## D8 — Autenticação JWT (confirmado 2026-11-07)
 
 - **Contexto:** HTTP + JWT; 401/403 por perfil; token de teste; explicar chave pública; detalhes em `ESTUDO-DECISOES.md` (D8).
