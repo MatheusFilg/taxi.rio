@@ -29,6 +29,3 @@ exec docker run --rm \
   -e DURATION \
   -e SLEEP \
   grafana/k6:0.54.0 run /loadtest/smoke-corridas.js
-
-
-[You have received this identical output 3 times. Re-reading '/home/matheusf/dev/pessoal/pref-rj-teste/loadtest/run-smoke.sh:raw' will not change it — use a narrower selector (path:A-B), or proceed with the edit.]

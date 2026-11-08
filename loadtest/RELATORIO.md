@@ -70,6 +70,3 @@ Durante o teste: fila `taxi.worker` com consume ativo; séries `http_requests_to
 ## Conclusão
 
 Com carga mínima (2 VUs), a API responde dentro dos limites do smoke, sem erros HTTP e com fluxo criar→consultar consistente. Este teste **não** substitui carga de estresse (Parte 3 / KEDA); serve como evidência Parte 2 de que o caminho autenticado de corridas aguenta tráfego sintético baixo na stack compose.
-
-
-[You have received this identical output 3 times. Re-reading '/home/matheusf/dev/pessoal/pref-rj-teste/loadtest/RELATORIO.md:raw' will not change it — use a narrower selector (path:A-B), or proceed with the edit.]
