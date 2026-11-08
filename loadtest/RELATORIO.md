@@ -21,6 +21,9 @@ Pré-requisito: `docker compose up -d` (pelo menos `mysql`, `redis`, `rabbitmq`,
 # Recomendado — mint JWT + k6 via imagem Grafana na rede compose
 bash loadtest/run-smoke.sh
 
+# Demo ao vivo Parte 2 (~2 min, 10 VUs) — olhar portais Rabbit/Prometheus enquanto roda
+bash loadtest/run-live-demo.sh
+
 # Ajustes opcionais
 export VUS=2 DURATION=20s
 bash loadtest/run-smoke.sh
@@ -49,6 +52,24 @@ Execução: `VUS=2`, `DURATION=20s`, `BASE_URL=http://api:3000` (container k6 na
 
 Todos os thresholds do script passaram.
 
+## Resultado demo ao vivo (2026-11-08, `run-live-demo.sh`)
+
+Parâmetros: `VUS=10`, `DURATION=2m`, `SLEEP=0,12` (k6 local em `localhost:3000`).
+
+| Métrica | Valor |
+|---------|--------|
+| Iterações | 3497 (~29/s) |
+| Requisições HTTP | 6994 (~58/s) |
+| `http_req_failed` | **0,00%** |
+| Checks | **100,00%** (13988/13988) |
+| **p95** `endpoint:post_corrida` | **57,82 ms** |
+| **p95** `endpoint:get_corrida` | **2,84 ms** |
+
+Durante o teste: fila `taxi.worker` com consume ativo; séries `http_requests_total` e `rabbitmq_queue_messages_ready` visíveis no Prometheus; traces `service.name=api` no Grafana após o flush OTel.
+
 ## Conclusão
 
 Com carga mínima (2 VUs), a API responde dentro dos limites do smoke, sem erros HTTP e com fluxo criar→consultar consistente. Este teste **não** substitui carga de estresse (Parte 3 / KEDA); serve como evidência Parte 2 de que o caminho autenticado de corridas aguenta tráfego sintético baixo na stack compose.
+
+
+[You have received this identical output 3 times. Re-reading '/home/matheusf/dev/pessoal/pref-rj-teste/loadtest/RELATORIO.md:raw' will not change it — use a narrower selector (path:A-B), or proceed with the edit.]
