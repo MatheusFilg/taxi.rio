@@ -1,3 +1,5 @@
+import { trace } from '@opentelemetry/api';
+
 export type WorkerLogLevel = 'info' | 'error';
 
 export type WorkerLogFields = {
@@ -21,6 +23,12 @@ export function correlationIdFromBody(raw: string): string | null {
   }
 }
 
+export function activeTraceId(): string | null {
+  const id = trace.getActiveSpan()?.spanContext().traceId;
+  if (!id || /^0+$/.test(id)) return null;
+  return id;
+}
+
 export function workerLogLine(
   level: WorkerLogLevel,
   msg: string,
@@ -31,7 +39,7 @@ export function workerLogLine(
     service: 'worker',
     msg,
     correlation_id: fields.correlation_id ?? null,
-    trace_id: fields.trace_id ?? null,
+    trace_id: fields.trace_id !== undefined ? fields.trace_id : activeTraceId(),
   };
   if (fields.event_id) record.event_id = fields.event_id;
   if (fields.event) record.event = fields.event;

@@ -10,12 +10,15 @@ import {
   messagesProcessedTotal,
 } from './metrics.js';
 import { correlationIdFromBody, logWorker } from './log.js';
+import { startTracing, traceCarrierFromHeaders, withConsumeSpan } from './tracing.js';
 import {
   handleMessage,
   MAX_RETRIES,
   nextRetryCount,
   retryCount,
 } from './process.js';
+
+startTracing();
 
 const port = Number(process.env.PORT ?? 3001);
 const host = process.env.HOST ?? '0.0.0.0';
@@ -110,43 +113,48 @@ async function main() {
     async (msg: amqp.ConsumeMessage | null) => {
       if (!msg) return;
       const rk = msg.fields.routingKey;
-      const endTimer = messageProcessingDurationSeconds.startTimer({
-        event: rk,
-      });
-      try {
-        await handleMessage(msg, { redis, pool, mongo });
-        messagesProcessedTotal.inc({ event: rk });
-        ch.ack(msg);
-      } catch (err) {
-        logWorker('error', 'falha ao processar', {
-          correlation_id: correlationIdFromBody(msg.content.toString()),
-          routing_key: rk,
-          err: err instanceof Error ? err.message : String(err),
+      const carrier = traceCarrierFromHeaders(
+        msg.properties.headers as Record<string, unknown> | undefined,
+      );
+      await withConsumeSpan(rk, carrier, async () => {
+        const endTimer = messageProcessingDurationSeconds.startTimer({
+          event: rk,
         });
-        const retries = retryCount(msg);
-        if (retries < MAX_RETRIES) {
-          const count = nextRetryCount(msg);
-          ch.nack(msg, false, false);
-          ch.publish(
-            RABBIT.exchange,
-            rk,
-            msg.content,
-            {
-              persistent: true,
-              headers: {
-                ...(msg.properties.headers ?? {}),
-                'x-retry-count': count,
+        try {
+          await handleMessage(msg, { redis, pool, mongo });
+          messagesProcessedTotal.inc({ event: rk });
+          ch.ack(msg);
+        } catch (err) {
+          logWorker('error', 'falha ao processar', {
+            correlation_id: correlationIdFromBody(msg.content.toString()),
+            routing_key: rk,
+            err: err instanceof Error ? err.message : String(err),
+          });
+          const retries = retryCount(msg);
+          if (retries < MAX_RETRIES) {
+            const count = nextRetryCount(msg);
+            ch.nack(msg, false, false);
+            ch.publish(
+              RABBIT.exchange,
+              rk,
+              msg.content,
+              {
+                persistent: true,
+                headers: {
+                  ...(msg.properties.headers ?? {}),
+                  'x-retry-count': count,
+                },
+                contentType: 'application/json',
               },
-              contentType: 'application/json',
-            },
-          );
-        } else {
-          messagesFailedTotal.inc({ event: rk });
-          ch.nack(msg, false, false);
+            );
+          } else {
+            messagesFailedTotal.inc({ event: rk });
+            ch.nack(msg, false, false);
+          }
+        } finally {
+          endTimer();
         }
-      } finally {
-        endTimer();
-      }
+      });
     },
     { noAck: false },
   );
@@ -168,6 +176,3 @@ main().catch((err) => {
   });
   process.exit(1);
 });
-
-
-[You have received this identical output 3 times. Re-reading '/home/matheusf/dev/pessoal/pref-rj-teste/apps/worker/src/index.ts:raw' will not change it — use a narrower selector (path:A-B), or proceed with the edit.]
