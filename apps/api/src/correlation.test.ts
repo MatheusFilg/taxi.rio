@@ -4,6 +4,7 @@ import { RABBIT } from '@taxi/shared';
 import { buildApp } from './app.js';
 import { correlationIdFromHeader } from './correlation.js';
 import { buildCorridaEnvelope } from './rabbit.js';
+import { tracingEnabled } from './tracing.js';
 
 const UUID =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -32,7 +33,17 @@ describe('correlation', () => {
     const logs = collectLogs(stream);
     expect(logs.length).toBeGreaterThan(0);
     expect(logs.every((line) => line.correlation_id === 'test-123')).toBe(true);
-    expect(logs.every((line) => line.trace_id === null)).toBe(true);
+    if (tracingEnabled()) {
+      expect(
+        logs.every(
+          (line) =>
+            typeof line.trace_id === 'string' &&
+            /^[0-9a-f]{32}$/.test(line.trace_id),
+        ),
+      ).toBe(true);
+    } else {
+      expect(logs.every((line) => line.trace_id === null)).toBe(true);
+    }
     expect(typeof logs[0]?.msg).toBe('string');
   });
 

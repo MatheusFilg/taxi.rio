@@ -5,6 +5,7 @@ import {
   type CorridaEventEnvelope,
   type CorridaEventType,
 } from '@taxi/shared';
+import { withPublishSpan } from './tracing.js';
 
 let channel: amqp.Channel | null = null;
 
@@ -38,17 +39,23 @@ export async function publishCorridaEvent<TPayload>(
   payload: TPayload,
   correlationId: string,
 ): Promise<string> {
-  const ch = await getChannel();
-  const envelope = buildCorridaEnvelope(event, payload, correlationId);
   const routingKey =
     event === RABBIT.routing.corridaCriada
       ? RABBIT.routing.corridaCriada
       : RABBIT.routing.statusAlterado;
-  ch.publish(
-    RABBIT.exchange,
-    routingKey,
-    Buffer.from(JSON.stringify(envelope)),
-    { persistent: true, contentType: 'application/json' },
-  );
-  return envelope.event_id;
+  return withPublishSpan(routingKey, async (traceHeaders) => {
+    const ch = await getChannel();
+    const envelope = buildCorridaEnvelope(event, payload, correlationId);
+    ch.publish(
+      RABBIT.exchange,
+      routingKey,
+      Buffer.from(JSON.stringify(envelope)),
+      {
+        persistent: true,
+        contentType: 'application/json',
+        headers: traceHeaders,
+      },
+    );
+    return envelope.event_id;
+  });
 }

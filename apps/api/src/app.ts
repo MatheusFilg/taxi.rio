@@ -1,4 +1,4 @@
-import Fastify, { LogController, type FastifyServerOptions } from 'fastify';
+import Fastify, { type FastifyServerOptions } from 'fastify';
 import { RABBIT } from '@taxi/shared';
 import { getApiMetricsText, registerHttpMetrics } from './metrics.js';
 import { registerAuth } from './auth.js';
@@ -8,6 +8,7 @@ import {
   registerCorrelation,
 } from './correlation.js';
 import { corridaRoutes } from './routes/corridas.js';
+import { ApiLogController, bindRequestContext } from './tracing.js';
 
 type LoggerConfig = Exclude<NonNullable<FastifyServerOptions['logger']>, boolean>;
 
@@ -24,13 +25,16 @@ export async function buildApp(options: BuildAppOptions = {}) {
     genReqId(req) {
       return correlationIdFromHeader(req.headers[CORRELATION_HEADER]);
     },
-    logController: new LogController({ requestIdLogLabel: 'correlation_id' }),
+    logController: new ApiLogController({ requestIdLogLabel: 'correlation_id' }),
     childLoggerFactory(logger, bindings, opts) {
       return logger.child({ trace_id: null, ...bindings }, opts);
     },
   });
 
   registerCorrelation(app);
+  app.addHook('onRequest', (request, _reply, done) => {
+    bindRequestContext(request, done);
+  });
   registerHttpMetrics(app);
   await registerAuth(app);
   await app.register(corridaRoutes);

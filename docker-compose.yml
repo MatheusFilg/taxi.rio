@@ -123,6 +123,8 @@ services:
       REDIS_URL: redis://redis:6379
       RABBITMQ_URL: amqp://taxi:taxi@rabbitmq:5672
       JWT_PUBLIC_KEY_PATH: /app/keys/test-public.pem
+      OTEL_SERVICE_NAME: api
+      OTEL_EXPORTER_OTLP_ENDPOINT: tempo:4317
     volumes:
       - ./keys/test-public.pem:/app/keys/test-public.pem:ro
     depends_on:
@@ -131,6 +133,8 @@ services:
       redis:
         condition: service_healthy
       rabbitmq:
+        condition: service_healthy
+      tempo:
         condition: service_healthy
 
   worker:
