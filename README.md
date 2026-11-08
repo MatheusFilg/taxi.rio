@@ -81,6 +81,22 @@ bun run --cwd apps/api test
 INTEGRATION=1 bun run --cwd apps/api test
 ```
 
+## CI (GitHub Actions) — Parte 1
+
+A cada **push** ou **pull request** em `main`, o workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) executa:
+
+1. **verify** — `bun install`, `bun run lint`, `bun run test`, `bun run build`
+2. **docker** — `docker compose build api worker ui` (build das imagens)
+
+Espelho local:
+
+```bash
+bun install && bun run lint && bun run test && bun run build
+docker compose build api worker ui
+```
+
+Painel: `https://github.com/MatheusFilg/taxi.rio/actions` (após o workflow estar no remoto).
+
 ## Métricas (fundação)
 
 API e worker expõem `GET /metrics` (texto Prometheus mínimo) para o job no `prometheus.yml`. Métricas de negócio/latência ficam na Parte 2.
