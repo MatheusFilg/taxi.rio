@@ -1,0 +1,117 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: worker
+spec:
+  ports:
+    - port: 3001
+      targetPort: 3001
+  selector:
+    app: worker
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker
+  template:
+    metadata:
+      labels:
+        app: worker
+    spec:
+      initContainers:
+        - name: wait-deps
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z mysql 3306 && nc -z redis 6379 && nc -z rabbitmq 5672 && nc -z mongo 27017; do
+                sleep 2
+              done
+      containers:
+        - name: worker
+          image: taxi-rio-worker:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3001
+          env:
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: taxi-app
+                  key: WORKER_PORT
+            - name: MYSQL_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: taxi-app
+                  key: MYSQL_HOST
+            - name: MYSQL_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: taxi-app
+                  key: MYSQL_PORT
+            - name: MYSQL_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: taxi-app
+                  key: MYSQL_DATABASE
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: taxi-credentials
+                  key: MYSQL_USER
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: taxi-credentials
+                  key: MYSQL_PASSWORD
+            - name: REDIS_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: taxi-app
+                  key: REDIS_URL
+            - name: RABBITMQ_URL
+              valueFrom:
+                secretKeyRef:
+                  name: taxi-credentials
+                  key: RABBITMQ_URL
+            - name: MONGODB_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: taxi-app
+                  key: MONGODB_URI
+            - name: OTEL_SERVICE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: taxi-app
+                  key: OTEL_SERVICE_NAME_WORKER
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: taxi-app
+                  key: OTEL_EXPORTER_OTLP_ENDPOINT
+          resources:
+            # Consumer I/O-bound; menos CPU que a API.
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 300m
+              memory: 256Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 10
+            periodSeconds: 5

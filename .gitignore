@@ -1,5 +1,6 @@
 # Estudo para entrevista (não vai para o avaliador — regra do humano)
 ESTUDO-DECISOES.md
+k8s/examples/secret.env
 
 # Maestri / orquestração local (não faz parte da entrega do desafio)
 .maestri/
