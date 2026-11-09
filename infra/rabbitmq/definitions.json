@@ -1,5 +1,6 @@
 {
   "rabbit_version": "3.13.0",
+  "vhosts": [{ "name": "/" }],
   "queues": [
     {
       "name": "taxi.worker",
