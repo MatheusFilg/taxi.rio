@@ -128,9 +128,19 @@ infra/        # MySQL init, etc.
 observability/prometheus
 observability/tempo
 observability/grafana/provisioning
+k8s/           # Parte 3 — kind + Kustomize
 .github/workflows/ci.yml
 ```
 
 Alertas D14 em `observability/alerts.yml` (compose) e `observability/alerts-prometheusrule.yaml` (K8s); UI em http://localhost:9090/alerts. Ver `observability/README.md`.
 
-Smoke k6: `bash loadtest/run-smoke.sh` — ver `loadtest/RELATORIO.md`. Artefatos restantes (Parte 3): `k8s/`.
+Smoke k6: `bash loadtest/run-smoke.sh` — ver `loadtest/RELATORIO.md`.
+
+## Kubernetes (Parte 3)
+
+```bash
+# Pré-requisito: kind + kubectl instalados
+bash k8s/scripts/kind-deploy.sh
+```
+
+Detalhes, probes, Secret e limites: [`k8s/README.md`](k8s/README.md).

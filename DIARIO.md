@@ -1,5 +1,12 @@
 # Diário de bordo
 
+## 2026-11-09
+
+- **Parte 3 mínima:** `k8s/base` Kustomize (deps + api/worker/ui; observabilidade no compose), kind + `kind-deploy.sh`, Secret via script, **D15** em `DECISIONS.md`, `LIMITES` atualizado.
+- **kind falhou :8080:** Airflow local em 8080; cluster padrão passou a mapear **18080/13000/19090**; `cluster-compose-ports.yaml` opcional.
+- **Validação kind (compose down):** `curl :13000/health` OK; UI `:18080` 200; `POST /corridas` 201; worker consumiu. Fix Rabbit: `rabbitmq-k8s.conf` sem import `definitions.json` (403 PLAIN no compose-style import).
+- **LIMITES.md:** revisão — Parte 1/2 shipped; cortes Parte 3 (Grafana/KEDA/Operator).
+
 ## 2026-11-08
 
 - **k6 demo Parte 2:** `run-live-demo.sh` 10 VUs / 2m — 0% falhas, 100% checks; portais Prometheus+Rabbit atualizados; RELATORIO com números da sessão.

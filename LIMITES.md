@@ -1,40 +1,76 @@
 # Limites conhecidos
 
-Atualizar conforme o desafio avança.
+Atualizado conforme o desafio avança. **Última revisão:** 2026-11-09.
 
 ---
 
-## Parte 2 (shipped — Epic 2026-11-08)
+## Status geral (para o avaliador)
 
-- **Decidido (docs):** **D13** (Tempo+Grafana, logs JSON sem Loki, OTel na cadeia) e **D14** (métrica fila opção B; alertas 5xx + fila `taxi.worker`); ordem Epic — correlation → Rabbit B → HTTP metrics → OTel → alerts → k6.
-- **Feito (shipped):** **Parte2-Correlation-Logs** — `x-correlation-id`, logs JSON api/worker com `correlation_id`, envelope Rabbit (`8cbe8a7`, `a1ea944`); Sentinel PASS 2026-11-08.
-- **Feito (shipped):** **D14 métrica fila (opção B)** — Parte2-Rabbit-Metrics-B; plugin `:15692`, scrape job `rabbitmq`, `RABBIT_QUEUE_PROMETHEUS` (`d62d98d`); Sentinel PASS 2026-11-08.
-- **Feito (shipped):** **Parte2-Metrics-HTTP** — prom-client API (rate/latency/`status_code`) + worker processamento; `API_HTTP_PROMETHEUS.api5xxRateSelector` (`05967d5`, `fe0015b`, `38f9dd4`); Sentinel PASS 2026-11-08.
-- **Feito (shipped):** **Parte2-OTel-Tempo-Grafana** — compose Grafana/Tempo OTLP; api/worker export + `trace_id` logs + W3C via Rabbit (`1b1ef11`, `9618bcc`, `2658ef9`); Sentinel PASS 2026-11-08.
-- **Feito (shipped):** **D14 alertas** — Parte2-Alerts; `alerts.yml` + `alerts-prometheusrule.yaml` (5xx + fila D14-B) (`f7537f4`); Sentinel PASS 2026-11-08.
-- **Feito (shipped):** **Parte2-k6-Load** — `loadtest/smoke-corridas.js`, `run-smoke.sh`, `RELATORIO.md`; smoke POST/GET `/corridas` com JWT (`3bb2409`, `0035b51`); Sentinel PASS 2026-11-08.
+| Parte | Situação | Onde ver |
+|-------|----------|----------|
+| **Parte 1** | Entregue (obrigatória) | `docker compose up`, JWT, fila, testes, CI |
+| **Parte 2** | Entregue | Métricas, alertas, OTel/Tempo, k6 + `loadtest/RELATORIO.md` |
+| **Parte 3** | **Mínima (kind)** | `k8s/README.md` + `bash k8s/scripts/kind-deploy.sh` |
 
-## O que ainda não foi feito
+**CI:** https://github.com/MatheusFilg/taxi.rio/actions — verde após fix `acdd850` (2026-11-08).
 
-- **GitHub Actions:** verde em https://github.com/MatheusFilg/taxi.rio/actions (run 42508732127, 2026-11-08).
-- **Parte 3** (k8s, KEDA, bônus load); Parte 2 → ver seção em construção acima.
-- Vídeo de apresentação não gravado.
-- OpenAPI/Swagger na API (portal dedicado pendente).
-- Retry worker republica manualmente (não usa delayed plugin Rabbit); DLQ após 3 falhas.
+---
 
-## O que foi feito (Parte 1)
+## Parte 1 — feito
 
-- Compose completo; JWT RS256; POST/PATCH/GET `/corridas`; idempotência HTTP; cache Redis (worker SET + DEL na API).
-- Worker: dedup `processed_events`, Mongo `eventos`, Redis projeção, D10 retry/DLQ básico.
-- UI mínima (token, criar, GET, motorista PATCH).
-- CI GitHub Actions: lint, test, build apps + imagens docker.
+- Compose completo; JWT RS256; `POST` / `PATCH` / `GET` `/corridas`; idempotência HTTP; cache Redis (worker SET + invalidação na API no PATCH).
+- Worker: dedup `processed_events`, Mongo auditoria, Redis projeção, retry/DLQ (D10) — republicação manual, sem plugin delayed do Rabbit.
+- UI mínima (token, criar corrida, GET, motorista PATCH); proxy nginx (`docker compose restart ui` após rebuild da API se 502).
+- GitHub Actions: lint, test, build apps + imagens Docker.
 - Testes: health + auth 401/403 + integração opcional `INTEGRATION=1`.
 
-## O que faríamos com mais tempo
+---
 
-- KEDA + demonstração no k6 (bônus Parte 3).
-- E2E Probe automatizado no Maestri a cada Shipped de UI.
+## Parte 2 — feito
 
-## Riscos abertos
+- **Correlação:** `x-correlation-id`, logs JSON (`correlation_id` / `trace_id`) na API e no worker.
+- **Métricas HTTP:** prom-client em API e worker; scrape Prometheus.
+- **Fila (D14 opção B):** métricas Rabbit em `:15692`; alerta de backlog `taxi.worker`.
+- **Alertas (D14):** `TaxiApiHigh5xxRate` + `TaxiWorkerQueueBacklog` em `observability/prometheus/alerts.yml` e `alerts-prometheusrule.yaml`.
+- **OTel (D13):** Tempo + Grafana no compose; export OTLP **HTTP** `http://tempo:4318/v1/traces`; `resource.service.name` = `api` / `worker` (ajuste pós-validação manual — gRPC + bundle Bun não ingeria traces).
+- **k6:** `loadtest/smoke-corridas.js`, `run-smoke.sh`, `run-live-demo.sh`, `RELATORIO.md` (smoke + demo 10 VUs / 2 min).
 
-- Tempo de implementação da Parte 2 após sparring fechado — mitigação: seguir ordem Epic e registrar cortes aqui.
+Decisões: **D13**, **D14** em `DECISIONS.md`.
+
+---
+
+## Parte 3 — feito (mínimo)
+
+- **`k8s/base/`** — Deployments/Services: MySQL, Redis, Mongo, RabbitMQ, api, worker, ui (overlay enxuto — **sem** Tempo/Prometheus no kind por espaço em disco).
+- **kind** portas host **18080 / 13000** (evita :8080 ocupado); `cluster-compose-ports.yaml` opcional.
+- **Probes** liveness/readiness e **requests/limits** nos YAML (dev local).
+- **ConfigMap** `taxi-app` + ConfigMaps de infra (init SQL, JWT público, Rabbit `rabbitmq-k8s.conf` sem import `definitions.json` — topologia no worker).
+- **Secret** `taxi-credentials` — criado por script; nenhum valor real no git (`k8s/examples/secret.env.example`).
+
+## Parte 3 — não feito
+
+- **Grafana** no cluster kind (continua no compose).
+- **Prometheus Operator** + aplicar `alerts-prometheusrule.yaml` via CRD.
+- **KEDA** (bônus PDF) — ver “com mais tempo”.
+
+---
+
+## Outros não feitos / cortes conscientes
+
+| Item | Motivo |
+|------|--------|
+| OpenAPI / Swagger na API | Fora do mínimo Parte 1; portal Swagger pendente |
+| Loki / busca centralizada de logs | D13: stdout JSON + `docker compose logs` |
+| JWKS | PEM versionada atende o enunciato |
+| E2E Maestri automatizado | Orquestração local (`.maestri/` ignorada no git) |
+| `ESTUDO-DECISOES.md` | Notas de estudo **locais** (`.gitignore`) — avaliador vê `DECISIONS.md` + `DIARIO.md` |
+
+---
+
+## Com mais tempo faríamos
+
+- **Parte 3:** Tempo/Prometheus/Grafana **dentro** do kind; multi-réplica worker.
+- **KEDA** no worker + cenário k6 mostrando backlog e scale (bônus PDF).
+- Retry com **delayed message** / plugin Rabbit em vez de republicação manual.
+- OpenAPI na API; dashboards Grafana provisionados (hoje só datasources).
+- Testes E2E UI no fluxo passageiro/motorista.

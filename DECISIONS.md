@@ -122,6 +122,15 @@ Formato: contexto → alternativas → escolha → trade-off.
 
 ---
 
+## D15 — Parte 3: kind + Kustomize (confirmado 2026-11-09)
+
+- **Contexto:** PDF Parte 3 — cluster local, probes, resources, Secret/ConfigMap, sem credencial no repo.
+- **Alternativas:** **k3d** / **minikube**; **Helm** (chart bitnami) vs **Kustomize** plano; deploy só apps vs stack completa.
+- **Escolha:** **kind** (`k8s/kind/cluster.yaml`) com portas host **18080/13000** (conflito :8080); **Kustomize** em `k8s/base/` com deps + api/worker/ui (observabilidade Parte 2 permanece no compose); **Secret** `taxi-credentials` via `k8s/scripts/create-secrets.sh`; Rabbit no cluster sem `load_definitions` (worker declara fila).
+- **Trade-off:** Sem Grafana/KEDA/Prometheus Operator neste overlay — menor superfície; `alerts-prometheusrule.yaml` fica como artefato CRD quando houver Operator; compose continua demo full-stack.
+
+---
+
 ## D7 — Frontend: Vite + React (sem shadcn pesado)
 
 - **Contexto:** UI mínima (D3); tempo limitado; PDF não avalia design.
