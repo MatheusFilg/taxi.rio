@@ -2,10 +2,12 @@
 
 ## 2026-11-09
 
+- **Commits Parte 3:** `68c35a8` k8s kind+Kustomize, `ec0c0cb` vhost Rabbit compose, `ce64c91` docs D15/LIMITES — push `main`.
 - **Parte 3 mínima:** `k8s/base` Kustomize (deps + api/worker/ui; observabilidade no compose), kind + `kind-deploy.sh`, Secret via script, **D15** em `DECISIONS.md`, `LIMITES` atualizado.
 - **kind falhou :8080:** Airflow local em 8080; cluster padrão passou a mapear **18080/13000/19090**; `cluster-compose-ports.yaml` opcional.
 - **Validação kind (compose down):** `curl :13000/health` OK; UI `:18080` 200; `POST /corridas` 201; worker consumiu. Fix Rabbit: `rabbitmq-k8s.conf` sem import `definitions.json` (403 PLAIN no compose-style import).
-- **LIMITES.md:** revisão — Parte 1/2 shipped; cortes Parte 3 (Grafana/KEDA/Operator).
+- **LIMITES/D15:** alinhados ao overlay enxuto (sem Tempo/Prometheus no kind).
+- **README:** guia do avaliador em ordem (openssl → compose → token com Bun ou `oven/bun` → curl/k6); placeholder vídeo Loom pós-gravação.
 
 ## 2026-11-08
 

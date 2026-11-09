@@ -4,13 +4,39 @@ Monorepo **Bun + Turborepo**: API Fastify, worker (RabbitMQ), UI React (Vite). V
 
 ## Pré-requisitos
 
-- [Docker](https://docs.docker.com/) + Docker Compose v2
-- [Bun](https://bun.sh/) (desenvolvimento local opcional)
+| Uso | Ferramentas |
+|-----|-------------|
+| **Stack principal (Parte 1 + 2)** | [Docker](https://docs.docker.com/) + Docker Compose v2 |
+| **Tokens JWT de teste** | `openssl` (gerar chave) + **Bun** *ou* imagem `oven/bun` (ver abaixo) |
+| **Parte 3 (K8s)** | `kind`, `kubectl` — [`k8s/README.md`](k8s/README.md) |
+| **k6 local (opcional)** | [k6](https://k6.io/) instalado; senão o script usa container |
 
-## Subir tudo (Parte 1)
+## Guia do avaliador (ordem)
+
+Reprodução pensada para **clone fresco** + Docker. Siga os passos nesta ordem.
+
+### 1. Chaves JWT de teste (uma vez por clone)
+
+A **pública** está no repo; a **privada não** (`.gitignore`). Gere com OpenSSL:
 
 ```bash
-docker compose up --build
+mkdir -p keys
+openssl genrsa -out keys/test-private.pem 2048
+openssl rsa -in keys/test-private.pem -pubout -out keys/test-public.pem
+chmod 600 keys/test-private.pem
+```
+
+### 2. Subir o stack
+
+```bash
+docker compose up --build -d
+```
+
+Aguarde healthchecks (~1–2 min). Conferir:
+
+```bash
+curl -sf http://localhost:3000/health
+curl -sf -o /dev/null -w "%{http_code}\n" http://localhost:8080/
 ```
 
 | Serviço    | URL |
@@ -21,15 +47,30 @@ docker compose up --build
 | RabbitMQ  | http://localhost:15672 (taxi / taxi) |
 | Prometheus| http://localhost:9090 |
 | Grafana   | http://localhost:3030 (admin / taxi) |
-| Tempo     | OTLP gRPC `:4317`, HTTP `:4318`; UI/query `:3200` |
+| Tempo     | OTLP gRPC `:4317`, HTTP `:4318`; query `:3200` |
 
-### Fluxo rápido (curl)
+### 3. Obter token JWT
 
-Gerar token (`keys/test-private.pem` — ver seção JWT):
+**Com Bun na máquina** (após `bun install` na raiz):
 
 ```bash
-TOK=$(bun run mint-jwt passageiro)
-KEY=$(uuidgen)
+bun install
+export TOK=$(bun run mint-jwt passageiro)
+```
+
+**Só com Docker** (sem instalar Bun no host):
+
+```bash
+export TOK=$(docker run --rm -v "$PWD:/app" -w /app oven/bun:1.4-alpine \
+  sh -c "bun install --silent && bun run scripts/mint-jwt.ts passageiro")
+```
+
+Na **UI**, cole o token na tela de login.
+
+### 4. Fluxo feliz (API)
+
+```bash
+KEY=$(uuidgen 2>/dev/null || openssl rand -hex 16)
 curl -s -X POST http://localhost:3000/corridas \
   -H "Authorization: Bearer $TOK" \
   -H "Idempotency-Key: $KEY" \
@@ -40,12 +81,31 @@ curl -s -X POST http://localhost:3000/corridas \
 Motorista altera status:
 
 ```bash
-MT=$(bun run mint-jwt motorista)
+export MT=$(bun run mint-jwt motorista 2>/dev/null || docker run --rm -v "$PWD:/app" -w /app oven/bun:1.4-alpine \
+  sh -c "bun install --silent && bun run scripts/mint-jwt.ts motorista")
 curl -s -X PATCH "http://localhost:3000/corridas/1/status" \
   -H "Authorization: Bearer $MT" \
   -H "Content-Type: application/json" \
   -d '{"status":"ACEITA"}'
 ```
+
+### 5. Parte 2 (mesmo compose)
+
+- Métricas: http://localhost:9090/targets (`api`, `worker`, `rabbitmq` **UP**)
+- Alertas: http://localhost:9090/alerts (`observability/prometheus/alerts.yml`)
+- Traces: Grafana http://localhost:3030 → Explore → Tempo → `{ resource.service.name = "api" }`
+- k6: `export JWT_TOKEN="$TOK" && bash loadtest/run-smoke.sh` — detalhes em `loadtest/RELATORIO.md`
+
+### 6. Parte 3 (cluster local, opcional no mesmo dia)
+
+```bash
+bash k8s/scripts/kind-deploy.sh
+# UI http://localhost:18080  API http://localhost:13000/health
+```
+
+Ver `k8s/README.md` (portas diferentes do compose para evitar conflito com :8080).
+
+---
 
 ## Desenvolvimento local (sem Docker nas apps)
 
@@ -57,38 +117,18 @@ bun run --cwd apps/worker dev
 bun run --cwd apps/ui dev
 ```
 
-## JWT de teste
-
-Chaves **fictícias** só para desenvolvimento. O repositório inclui `keys/test-public.pem` (verificação). A **privada não vai pro git** — gere uma vez por clone:
-
-```bash
-mkdir -p keys
-openssl genrsa -out keys/test-private.pem 2048
-openssl rsa -in keys/test-private.pem -pubout -out keys/test-public.pem
-chmod 600 keys/test-private.pem
-```
-
-Gerar token (precisa de `bun install` na raiz):
-
-```bash
-bun run mint-jwt passageiro
-bun run mint-jwt motorista
-```
-
 ## Testes
 
 ```bash
+bun install
 bun run --cwd apps/api test
 # integração (MySQL + Rabbit + Redis rodando):
 INTEGRATION=1 bun run --cwd apps/api test
 ```
 
-## CI (GitHub Actions) — Parte 1
+## CI (GitHub Actions)
 
-A cada **push** ou **pull request** em `main`, o workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) executa:
-
-1. **verify** — Bun **1.4.2** (igual ao `packageManager` / `bun.lock`), `bun install`, lint, test, build
-2. **docker** — `docker compose build api worker ui` (build das imagens)
+A cada **push** ou **pull request** em `main`, o workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) executa lint, test, build e `docker compose build api worker ui`.
 
 Espelho local:
 
@@ -97,25 +137,19 @@ bun install && bun run lint && bun run test && bun run build
 docker compose build api worker ui
 ```
 
-Painel: `https://github.com/MatheusFilg/taxi.rio/actions` (após o workflow estar no remoto).
+Painel: https://github.com/MatheusFilg/taxi.rio/actions
 
-## Métricas (fundação)
+## Observabilidade (resumo)
 
-API e worker expõem `GET /metrics` (Prometheus via `prom-client`) para os jobs no `prometheus.yml`: API com `http_requests_total` / `http_request_duration_seconds` (label `status_code` para alerta 5xx D14); worker com `taxi_worker_messages_*` (fila continua no job `rabbitmq`, D14-B).
-
-RabbitMQ expõe métricas no plugin **rabbitmq_prometheus** (`:15692`); o job `rabbitmq` no Prometheus coleta `rabbitmq_queue_messages_ready` da fila `taxi.worker` (D14 opção B — selector em `packages/shared` `RABBIT_QUEUE_PROMETHEUS`).
-
-Após subir o compose, targets em http://localhost:9090/targets devem marcar `api`, `worker` e `rabbitmq` como **UP** (pode levar ~15s). Query de smoke: `rabbitmq_queue_messages_ready{queue="taxi.worker"}`.
-
-## Traces (D13 — infra)
-
-**Tempo** + **Grafana** no compose; datasources **Prometheus** e **Tempo** provisionados (sem Loki). Logs continuam JSON no stdout (`docker compose logs api worker | jq`).
-
-Com compose, api e worker exportam OTLP para Tempo em `http://tempo:4318/v1/traces` (HTTP; mais confiável no bundle Bun que gRPC `:4317`). Trace alvo: `POST /corridas` → publish Rabbit (`traceparent`) → worker — Grafana **Explore → Tempo → TraceQL** `{ resource.service.name = "api" }`.
+- **Métricas:** `GET /metrics` na API e no worker; fila Rabbit em `:15692` (D14-B).
+- **Traces (D13):** OTLP **HTTP** para Tempo (`http://tempo:4318/v1/traces`); logs JSON no stdout.
+- **Alertas D14:** `TaxiApiHigh5xxRate`, `TaxiWorkerQueueBacklog` — ver `observability/README.md`.
 
 ## Declaração de uso de IA
 
-Usei assistentes de código (Cursor) para estruturar o monorepo, documentar decisões (`DECISIONS.md`, `DIARIO.md`) e rascunhar implementação. Revisei e validei as escolhas de arquitetura (JWT RS256, Rabbit direct, idempotência, cache). Exemplo rejeitado/corrigido: mapeamento inicial de modelos Codex no Maestri — ajustado para **Composer + Grok** após testar limites do plano pessoal (`DIARIO.md`).
+Usei assistentes de código (Cursor) para estruturar o monorepo, documentar decisões (`DECISIONS.md`, `DIARIO.md`) e rascunhar implementação. Revisei e validei as escolhas de arquitetura (JWT RS256, Rabbit direct, idempotência, cache). Exemplo corrigido: export OTel gRPC → HTTP após validação manual no Grafana (`DIARIO.md` 2026-11-08).
+
+**Vídeo (Loom ≤10 min):** _(link será adicionado após gravação)_
 
 ## Estrutura
 
@@ -125,22 +159,8 @@ apps/worker   # Consumer RabbitMQ
 apps/ui       # Vite + React
 packages/shared
 infra/        # MySQL init, etc.
-observability/prometheus
-observability/tempo
-observability/grafana/provisioning
-k8s/           # Parte 3 — kind + Kustomize
+observability/
+loadtest/     # k6 + RELATORIO.md
+k8s/          # Parte 3 — kind + Kustomize
 .github/workflows/ci.yml
 ```
-
-Alertas D14 em `observability/alerts.yml` (compose) e `observability/alerts-prometheusrule.yaml` (K8s); UI em http://localhost:9090/alerts. Ver `observability/README.md`.
-
-Smoke k6: `bash loadtest/run-smoke.sh` — ver `loadtest/RELATORIO.md`.
-
-## Kubernetes (Parte 3)
-
-```bash
-# Pré-requisito: kind + kubectl instalados
-bash k8s/scripts/kind-deploy.sh
-```
-
-Detalhes, probes, Secret e limites: [`k8s/README.md`](k8s/README.md).
