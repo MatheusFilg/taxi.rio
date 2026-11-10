@@ -65,7 +65,6 @@ Decisões: **D13**, **D14** em `DECISIONS.md`.
 | Loki / busca centralizada de logs | D13: stdout JSON + `docker compose logs` |
 | JWKS | PEM versionada atende o enunciato |
 | E2E Maestri automatizado | Orquestração local (`.maestri/` ignorada no git) |
-| `ESTUDO-DECISOES.md` | Notas de estudo **locais** (`.gitignore`) — avaliador vê `DECISIONS.md` + `DIARIO.md` |
 
 ---
 

@@ -1,6 +1,6 @@
 # Decisões de arquitetura
 
-Formato: contexto → alternativas → escolha → trade-off.
+Formato: contexto → alternativas → escolha → trade-off. Entradas numeradas em **ordem crescente**.
 
 ---
 
@@ -31,21 +31,39 @@ Formato: contexto → alternativas → escolha → trade-off.
 
 ---
 
-## D4 — Documentação de estudo local
-
-- **Contexto:** Uso de IA permitido; o humano pediu narrativa longa **fora do repo** para preparar entrevista (não substitui `DECISIONS.md`).
-- **Alternativas:** MD versionado (transparência total) vs **local + `.gitignore`**.
-- **Escolha:** `ESTUDO-DECISOES.md` na raiz do clone, **ignorado pelo Git**; o avaliador vê só `DECISIONS.md`, `DIARIO.md`, `LIMITES.md`.
-- **Trade-off:** Conteúdo de estudo não vai no push; honestidade via README (declaração de IA) e defesa oral.
-
----
-
 ## D5 — Broker (obrigatório no desafio)
 
 - **Contexto:** PDF exige RabbitMQ; pergunta explícita se manteria outro broker do zero.
 - **Alternativas:** RabbitMQ vs Kafka, NATS, Redis Streams, SQS.
 - **Escolha:** **Manter RabbitMQ** para este desafio (roteamento, filas de trabalho, métricas de fila na Parte 2).
 - **Trade-off:** Se fosse greenfield *sem* restrição, poderia avaliar NATS para simplicidade — aqui a restrição e o domínio “evento de corrida” favorecem Rabbit com exchange + filas dedicadas ao worker.
+
+---
+
+## D6 — Monorepo: Bun + Turborepo + `packages/shared`
+
+- **Contexto:** Um repositório com `api/`, `worker/`, `ui/`; contrato JWT (claims, perfis) e eventos Rabbit (`corrida.criada`, `corrida.status_alterado`) precisam bater entre API, worker e UI; humano já usa Bun + Turbo no dia a dia.
+- **Alternativas:** Três pastas soltas (A); workspaces npm/pnpm sem Turbo; Turbo sem pacote shared.
+- **Escolha:** **Turborepo** na raiz; apps em `apps/api`, `apps/worker`, `apps/ui`; **runtime Bun** para API/worker (e toolchain do monorepo); **`packages/shared`** enxuto — tipos/schemas de JWT, domínio de corrida/status, payloads de mensagem, constantes (routing keys, nomes de evento).
+- **Trade-off:** Setup inicial maior que monorepo “leve”; README/CI/Docker devem deixar explícito que é **Node-compatible (Bun)** — avaliador ainda vê Fastify + worker Node do PDF. Ganho: menos drift API↔worker↔UI na fila e no token; `turbo run test/lint/build` ordena o CI.
+
+---
+
+## D7 — Frontend: Vite + React (sem shadcn pesado)
+
+- **Contexto:** UI mínima (D3); tempo limitado; PDF não avalia design.
+- **Alternativas:** CRA; Vite + biblioteca de componentes (shadcn/Radix); Vite + CSS simples.
+- **Escolha:** **Vite + React** em `apps/ui`; estilização mínima (CSS/modules ou poucas classes), **sem** shadcn/Radix como base do projeto.
+- **Trade-off:** Menos componentes prontos; telas mais “cruas” e defensáveis como foco em fluxo + JWT, não em UI kit.
+
+---
+
+## D8 — Autenticação JWT (confirmado 2026-11-07)
+
+- **Contexto:** HTTP + JWT; 401/403 por perfil; token de teste; chave pública versionada e privada só em dev (`README`).
+- **Alternativas:** HS256 (secret único) vs RS256; PEM vs JWKS; login real vs tokens estáticos + `mint-jwt`.
+- **Escolha:** **RS256**; validação com **`keys/test-public.pem`** no repo; **tokens pré-gerados** no README + script `mint-jwt` opcional; claims **`sub` + `perfil`** (`passageiro` \| `motorista`); **`@fastify/jwt`** na API; UI com seletor de token de teste; **403** se passageiro acessa corrida de outro `sub`; **motorista** com token válido pode **GET** qualquer corrida (**200**) para acompanhar status na UI.
+- **Trade-off:** Sem fluxo de senha/OAuth (fora do escopo); JWKS não implementado na v1 — PEM atende o enunciato; privada só em dev (`.gitignore`).
 
 ---
 
@@ -104,36 +122,9 @@ Formato: contexto → alternativas → escolha → trade-off.
 
 ---
 
-## D8 — Autenticação JWT (confirmado 2026-11-07)
-
-- **Contexto:** HTTP + JWT; 401/403 por perfil; token de teste; explicar chave pública; narrativa longa na nota local de estudo (D8, não versionada).
-- **Alternativas:** HS256 (secret único) vs RS256; PEM vs JWKS; login real vs tokens estáticos + `mint-jwt`.
-- **Escolha:** **RS256**; validação com **`keys/test-public.pem`** no repo; **tokens pré-gerados** no README + script `mint-jwt` opcional; claims **`sub` + `perfil`** (`passageiro` \| `motorista`); **`@fastify/jwt`** na API; UI com seletor de token de teste; **403** se passageiro acessa corrida de outro `sub`; **motorista** com token válido pode **GET** qualquer corrida (**200**) para acompanhar status na UI.
-- **Trade-off:** Sem fluxo de senha/OAuth (fora do escopo); JWKS não implementado na v1 — PEM atende o enunciato; privada só em dev (`.gitignore`).
-
----
-
-## D6 — Monorepo: Bun + Turborepo + `packages/shared`
-
-- **Contexto:** Um repositório com `api/`, `worker/`, `ui/`; contrato JWT (claims, perfis) e eventos Rabbit (`corrida.criada`, `corrida.status_alterado`) precisam bater entre API, worker e UI; humano já usa Bun + Turbo no dia a dia.
-- **Alternativas:** Três pastas soltas (A); workspaces npm/pnpm sem Turbo; Turbo sem pacote shared.
-- **Escolha:** **Turborepo** na raiz; apps em `apps/api`, `apps/worker`, `apps/ui`; **runtime Bun** para API/worker (e toolchain do monorepo); **`packages/shared`** enxuto — tipos/schemas de JWT, domínio de corrida/status, payloads de mensagem, constantes (routing keys, nomes de evento).
-- **Trade-off:** Setup inicial maior que monorepo “leve”; README/CI/Docker devem deixar explícito que é **Node-compatible (Bun)** — avaliador ainda vê Fastify + worker Node do PDF. Ganho: menos drift API↔worker↔UI na fila e no token; `turbo run test/lint/build` ordena o CI.
-
----
-
 ## D15 — Parte 3: kind + Kustomize (confirmado 2026-11-09)
 
 - **Contexto:** PDF Parte 3 — cluster local, probes, resources, Secret/ConfigMap, sem credencial no repo.
 - **Alternativas:** **k3d** / **minikube**; **Helm** (chart bitnami) vs **Kustomize** plano; deploy só apps vs stack completa.
 - **Escolha:** **kind** (`k8s/kind/cluster.yaml`) com portas host **18080/13000** (conflito :8080); **Kustomize** em `k8s/base/` com deps + api/worker/ui (observabilidade Parte 2 permanece no compose); **Secret** `taxi-credentials` via `k8s/scripts/create-secrets.sh`; Rabbit no cluster sem `load_definitions` (worker declara fila).
 - **Trade-off:** Sem Grafana/KEDA/Prometheus Operator neste overlay — menor superfície; `alerts-prometheusrule.yaml` fica como artefato CRD quando houver Operator; compose continua demo full-stack.
-
----
-
-## D7 — Frontend: Vite + React (sem shadcn pesado)
-
-- **Contexto:** UI mínima (D3); tempo limitado; PDF não avalia design.
-- **Alternativas:** CRA; Vite + biblioteca de componentes (shadcn/Radix); Vite + CSS simples.
-- **Escolha:** **Vite + React** em `apps/ui`; estilização mínima (CSS/modules ou poucas classes), **sem** shadcn/Radix como base do projeto.
-- **Trade-off:** Menos componentes prontos; telas mais “cruas” e defensáveis como foco em fluxo + JWT, não em UI kit.

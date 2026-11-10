@@ -1,5 +1,10 @@
 # Diário de bordo
 
+## 2026-11-10
+
+- **DECISIONS.md:** removida D4 (metadado de docs locais); decisões técnicas **D1–D3, D5–D15** em ordem crescente; D8 sem referência a notas externas.
+- **LIMITES / DIARIO / .gitignore:** sem menção ao arquivo de notas pessoais no texto avaliável.
+
 ## 2026-11-09
 
 - **Commits Parte 3:** `68c35a8` k8s kind+Kustomize, `ec0c0cb` vhost Rabbit compose, `ce64c91` docs D15/LIMITES — push `main`.
@@ -12,7 +17,7 @@
 ## 2026-11-08
 
 - **k6 demo Parte 2:** `run-live-demo.sh` 10 VUs / 2m — 0% falhas, 100% checks; portais Prometheus+Rabbit atualizados; RELATORIO com números da sessão.
-- **Contrato estudo:** humano lembrou que `ESTUDO-DECISOES.md` é **local** (não versionado); revertido D4 + `.gitignore` + README; arquivo Parte 2 permanece só na máquina.
+- **Docs:** removidas referências a notas locais de entrevista do repositório avaliável; `DECISIONS.md` só decisões técnicas.
 - **Observabilidade manual (você):** Grafana TraceQL `service.name=api` vazio; logs com `trace_id` duplicado (`null` + hex). Causa: falta `resource.service.name` no OTel + export gRPC no bundle Docker não ingere no Tempo. Fix: resource `service.name`, exporter OTLP **HTTP** `:4318/v1/traces`, log só um `trace_id`.
 - **CI GitHub:** push OK; 1ª falha Bun 1.2 vs lockfile 1.4; 2ª falha testes sem `test-private.pem` → fix Bun 1.4.2 + openssl no workflow.
 - **Sparring Parte2 fechado:** D13 (Tempo+Grafana, logs JSON sem Loki, OTel na cadeia) e D14 (métrica fila opção B; alertas 5xx + fila `taxi.worker`) → registrado em `DECISIONS.md`; execução nos cards Backlog/Building.
