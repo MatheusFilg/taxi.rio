@@ -2,6 +2,7 @@
 
 ## 2026-11-10
 
+- **Entrega vídeo:** link no README — https://youtu.be/pzVKuJvBxZU; `LIMITES` atualizado (não pendente).
 - **Rabbit compose 403:** com `load_definitions`, o broker **não cria** o user do `RABBITMQ_DEFAULT_*`; `definitions.json` só tinha vhost/filas → login `taxi` inválido. Corrigido com `users` + `permissions` no JSON.
 - **DECISIONS.md:** removida D4 (metadado de docs locais); decisões técnicas **D1–D3, D5–D15** em ordem crescente; D8 sem referência a notas externas.
 - **LIMITES / DIARIO / .gitignore:** sem menção ao arquivo de notas pessoais no texto avaliável.
@@ -13,7 +14,7 @@
 - **kind falhou :8080:** Airflow local em 8080; cluster padrão passou a mapear **18080/13000/19090**; `cluster-compose-ports.yaml` opcional.
 - **Validação kind (compose down):** `curl :13000/health` OK; UI `:18080` 200; `POST /corridas` 201; worker consumiu. Fix Rabbit: `rabbitmq-k8s.conf` sem import `definitions.json` (403 PLAIN no compose-style import).
 - **LIMITES/D15:** alinhados ao overlay enxuto (sem Tempo/Prometheus no kind).
-- **README:** guia do avaliador em ordem (openssl → compose → token com Bun ou `oven/bun` → curl/k6); placeholder vídeo Loom pós-gravação.
+- **README:** guia do avaliador em ordem (openssl → compose → token com Bun ou `oven/bun` → curl/k6).
 
 ## 2026-11-08
 

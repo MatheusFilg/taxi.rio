@@ -33,7 +33,7 @@ Atualizado conforme o desafio avança. **Última revisão:** 2026-11-10.
 - **Correlação:** `x-correlation-id`, logs JSON (`correlation_id` / `trace_id`) na API e no worker.
 - **Métricas HTTP:** prom-client em API e worker; scrape Prometheus.
 - **Fila (D14 opção B):** métricas Rabbit em `:15692`; alerta de backlog `taxi.worker`.
-- **Alertas (D14):** `TaxiApiHigh5xxRate` + `TaxiWorkerQueueBacklog` em `observability/prometheus/alerts.yml` e `alerts-prometheusrule.yaml`.
+- **Alertas (D14):** `TaxiApiHigh5xxRate` + `TaxiWorkerQueueBacklog` em `observability/alerts.yml` e `observability/alerts-prometheusrule.yaml`.
 - **OTel (D13):** Tempo + Grafana no compose; export OTLP **HTTP** `http://tempo:4318/v1/traces`; `resource.service.name` = `api` / `worker` (ajuste pós-validação manual — gRPC + bundle Bun não ingeria traces).
 - **k6:** `loadtest/smoke-corridas.js`, `run-smoke.sh`, `run-live-demo.sh`, `RELATORIO.md` (smoke + demo 10 VUs / 2 min).
 
