@@ -2,6 +2,7 @@
 
 ## 2026-11-10
 
+- **Rabbit compose 403:** com `load_definitions`, o broker **não cria** o user do `RABBITMQ_DEFAULT_*`; `definitions.json` só tinha vhost/filas → login `taxi` inválido. Corrigido com `users` + `permissions` no JSON.
 - **DECISIONS.md:** removida D4 (metadado de docs locais); decisões técnicas **D1–D3, D5–D15** em ordem crescente; D8 sem referência a notas externas.
 - **LIMITES / DIARIO / .gitignore:** sem menção ao arquivo de notas pessoais no texto avaliável.
 
@@ -35,3 +36,6 @@
 - Sparring cache **p4:** **B + invalidação** → **D12**.
 - **Review blockers:** Forge/Nexus/Relay — `/metrics` mínimo, mount Rabbit definitions, README openssl para chave JWT local.
 - **Parte1-Compose-Fundacao:** monorepo Bun+Turbo; `docker-compose.yml` (MySQL, Redis, Mongo, RabbitMQ, Prometheus, api, worker, ui); `packages/shared`; healthchecks; worker declara topologia Rabbit (D9/D10); schema MySQL inicial em `infra/mysql/init.sql`; README com comandos; `keys/test-public.pem` commitada; `mint-jwt` com jose.
+
+
+[You have received this identical output 3 times. Re-reading '/home/matheusf/dev/pessoal/pref-rj-teste/DIARIO.md:raw' will not change it — use a narrower selector (path:A-B), or proceed with the edit.]
