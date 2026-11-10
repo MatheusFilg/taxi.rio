@@ -1,6 +1,23 @@
 {
   "rabbit_version": "3.13.0",
   "vhosts": [{ "name": "/" }],
+  "users": [
+    {
+      "name": "taxi",
+      "password_hash": "MZ94/Co1lwQwYnOxEbFWt67C6AwQ6GzgufmMFONJGqaD2rzn",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": ["administrator"]
+    }
+  ],
+  "permissions": [
+    {
+      "user": "taxi",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
   "queues": [
     {
       "name": "taxi.worker",
