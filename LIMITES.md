@@ -1,6 +1,6 @@
 # Limites conhecidos
 
-Atualizado conforme o desafio avança. **Última revisão:** 2026-11-09.
+Atualizado conforme o desafio avança. **Última revisão:** 2026-11-10.
 
 ---
 
@@ -12,9 +12,9 @@ Atualizado conforme o desafio avança. **Última revisão:** 2026-11-09.
 | **Parte 2** | Entregue | Métricas, alertas, OTel/Tempo, k6 + `loadtest/RELATORIO.md` |
 | **Parte 3** | **Mínima (kind)** | `k8s/README.md` + `bash k8s/scripts/kind-deploy.sh` |
 
-**CI:** https://github.com/MatheusFilg/taxi.rio/actions — verde em `main` (último push com Parte 3: `ce64c91`, 2026-11-09).
+**CI:** https://github.com/MatheusFilg/taxi.rio/actions — pipeline em `main`.
 
-**Entrega:** vídeo Loom ≤10 min pendente (link no README após gravação).
+**Vídeo:** https://youtu.be/pzVKuJvBxZU (também no `README.md`).
 
 ---
 

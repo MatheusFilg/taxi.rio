@@ -92,7 +92,7 @@ curl -s -X PATCH "http://localhost:3000/corridas/1/status" \
 ### 5. Parte 2 (mesmo compose)
 
 - Métricas: http://localhost:9090/targets (`api`, `worker`, `rabbitmq` **UP**)
-- Alertas: http://localhost:9090/alerts (`observability/prometheus/alerts.yml`)
+- Alertas: http://localhost:9090/alerts (`observability/alerts.yml`)
 - Traces: Grafana http://localhost:3030 → Explore → Tempo → `{ resource.service.name = "api" }`
 - k6: `export JWT_TOKEN="$TOK" && bash loadtest/run-smoke.sh` — detalhes em `loadtest/RELATORIO.md`
 
@@ -149,7 +149,7 @@ Painel: https://github.com/MatheusFilg/taxi.rio/actions
 
 Usei assistentes de código (Cursor) para estruturar o monorepo, documentar decisões (`DECISIONS.md`, `DIARIO.md`) e rascunhar implementação. Revisei e validei as escolhas de arquitetura (JWT RS256, Rabbit direct, idempotência, cache). Exemplo corrigido: export OTel gRPC → HTTP após validação manual no Grafana (`DIARIO.md` 2026-11-08).
 
-**Vídeo (Loom ≤10 min):** _(link será adicionado após gravação)_
+**Vídeo de demonstração (≤10 min):** https://youtu.be/pzVKuJvBxZU
 
 ## Estrutura
 
